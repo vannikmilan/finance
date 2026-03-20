@@ -9,330 +9,485 @@
   <title>Budget</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f5f5f0;
-      color: #1a1a1a;
-      min-height: 100vh;
-      padding: env(safe-area-inset-top, 16px) 16px env(safe-area-inset-bottom, 16px);
+    :root {
+      --bg:#f5f5f0; --surface:#fff; --surface2:#f0f0eb;
+      --border:rgba(0,0,0,0.1); --border2:rgba(0,0,0,0.06);
+      --text:#1a1a1a; --text2:#555; --text3:#999;
+      --green:#3B6D11; --green-bg:#eaf3de; --green-text:#27500a;
+      --amber:#BA7517; --amber-bg:#faeeda; --amber-text:#633806;
+      --red:#a32d2d; --red-bg:#fcebeb; --red-text:#501313;
+      --blue:#185FA5; --blue-bg:#e6f1fb; --blue-text:#0c447c;
     }
-
     @media (prefers-color-scheme: dark) {
-      body { background: #111; color: #f0f0f0; }
-      .zone { background: #1e1e1e; border-color: rgba(255,255,255,0.1); }
-      input { background: #2a2a2a; border-color: rgba(255,255,255,0.15); color: #f0f0f0; }
-      .add-btn { border-color: rgba(255,255,255,0.2); color: #aaa; }
-      .add-btn:hover { background: #2a2a2a; }
-      .month-nav button { background: #2a2a2a; border-color: rgba(255,255,255,0.1); color: #ccc; }
-      .bar-track { background: #2a2a2a; }
-      .zone-title { color: #aaa; }
-      .input-label { color: #aaa; }
-      .savings-pct { color: #888; }
+      :root {
+        --bg:#111; --surface:#1e1e1e; --surface2:#2a2a2a;
+        --border:rgba(255,255,255,0.12); --border2:rgba(255,255,255,0.06);
+        --text:#f0f0f0; --text2:#aaa; --text3:#666;
+        --green-bg:#1a2e0a; --green-text:#9fd65a;
+        --amber-bg:#2e1f05; --amber-text:#f0a940;
+        --red-bg:#2e0a0a; --red-text:#f08080;
+        --blue-bg:#071b30; --blue-text:#6ab0f5;
+      }
     }
+    body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,16px); }
 
-    .wrap { max-width: 480px; margin: 0 auto; padding-top: 12px; }
+    .nav { display:flex; border-bottom:1px solid var(--border); background:var(--surface); position:sticky; top:0; z-index:10; }
+    .nav-tab { flex:1; padding:12px 4px; font-size:12px; font-weight:500; text-align:center; color:var(--text3); background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; }
+    .nav-tab.active { color:var(--text); border-bottom-color:var(--text); }
 
-    .top-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
+    .page { display:none; padding:16px; max-width:520px; margin:0 auto; }
+    .page.active { display:block; }
 
-    .app-title { font-size: 20px; font-weight: 600; }
+    .section { background:var(--surface); border:1px solid var(--border2); border-radius:12px; margin-bottom:10px; overflow:hidden; }
+    .sec-hdr { display:flex; align-items:center; padding:11px 14px; gap:10px; cursor:pointer; user-select:none; }
+    .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .sec-name { font-size:13px; font-weight:500; color:var(--text); flex:1; }
+    .sec-total { font-size:16px; font-weight:600; }
+    .chev { font-size:10px; color:var(--text3); transition:transform 0.2s; }
+    .chev.open { transform:rotate(180deg); }
+    .sec-body { border-top:1px solid var(--border2); }
 
-    .month-nav {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      font-weight: 500;
-    }
+    .line-row { display:flex; align-items:center; padding:8px 14px; gap:8px; border-bottom:1px solid var(--border2); }
+    .line-row:last-child { border-bottom:none; }
+    .lname { flex:1; font-size:13px; color:var(--text2); }
+    .lval { font-size:13px; font-weight:500; color:var(--text); min-width:60px; text-align:right; }
 
-    .month-nav button {
-      width: 28px; height: 28px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      background: #fff;
-      cursor: pointer;
-      font-size: 16px;
-      display: flex; align-items: center; justify-content: center;
-    }
+    input[type=text],input[type=number] { background:var(--surface2); border:1px solid var(--border); border-radius:7px; padding:6px 9px; font-size:13px; color:var(--text); outline:none; }
+    input[type=text]:focus,input[type=number]:focus { border-color:var(--blue); }
+    input.iname { flex:1; background:none; border:none; border-radius:0; padding:0; font-size:13px; color:var(--text2); }
+    input.iname:focus { outline:none; color:var(--text); }
+    input.iname:disabled { color:var(--text2); opacity:0.7; }
+    input.ival { width:100px; text-align:right; }
+    input.ival:disabled { opacity:0.7; }
+    input.inote { width:100%; background:none; border:none; border-radius:0; padding:0 0 0 4px; font-size:11px; color:var(--text3); font-style:italic; }
+    input.inote:focus { outline:none; color:var(--text2); }
+    .note-wrap { padding:2px 14px 7px; }
 
-    .zone {
-      background: #fff;
-      border: 1px solid #e8e8e4;
-      border-radius: 14px;
-      padding: 14px 16px;
-      margin-bottom: 10px;
-    }
+    .add-btn { width:100%; padding:8px; font-size:12px; color:var(--text3); background:none; border:none; border-top:1px solid var(--border2); cursor:pointer; }
+    .add-btn:hover { background:var(--surface2); }
 
-    .zone-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
+    /* month page */
+    .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+    .mnav { display:flex; align-items:center; gap:8px; }
+    .mbtn { background:var(--surface); border:1px solid var(--border); border-radius:8px; width:30px; height:30px; font-size:18px; cursor:pointer; color:var(--text2); display:flex; align-items:center; justify-content:center; }
+    .mlabel { font-size:15px; font-weight:600; min-width:86px; text-align:center; }
+    .spill { font-size:11px; font-weight:600; padding:4px 11px; border-radius:20px; cursor:pointer; border:none; }
+    .spill-open { background:var(--amber-bg); color:var(--amber-text); }
+    .spill-closed { background:var(--green-bg); color:var(--green-text); }
 
-    .zone-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-    .zone-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; flex: 1; }
-    .zone-amount { font-size: 20px; font-weight: 600; }
-    .savings-pct { font-size: 11px; color: #888; margin-left: 2px; }
+    .bstrip { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:10px; }
+    .bcard { background:var(--surface2); border-radius:10px; padding:9px 12px; }
+    .blbl { font-size:10px; color:var(--text3); margin-bottom:3px; text-transform:uppercase; letter-spacing:.04em; }
+    .bval { font-size:17px; font-weight:600; color:var(--text); }
+    .vpos { color:var(--green); } .vneg { color:var(--red); }
 
-    .input-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
+    .urow { display:flex; align-items:center; padding:10px 14px; gap:8px; }
+    .ulbl { font-size:12px; color:var(--text3); flex:1; line-height:1.4; }
+    .uval { font-size:15px; font-weight:600; }
+    .uok { color:var(--green); } .uwarn { color:var(--amber); } .ubad { color:var(--red); }
 
-    .input-label {
-      flex: 1;
-      font-size: 13px;
-      color: #555;
-      min-width: 0;
-    }
+    .bwrap { padding:0 14px 12px; }
+    .blabels { display:flex; justify-content:space-between; font-size:10px; color:var(--text3); margin-bottom:4px; }
+    .btrack { height:5px; background:var(--surface2); border-radius:3px; overflow:hidden; display:flex; }
+    .bseg { height:100%; transition:width 0.3s; }
 
-    input[type="text"], input[type="number"] {
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      padding: 6px 10px;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.15s;
-    }
+    .bal-inputs { display:flex; gap:8px; padding:10px 14px; }
+    .bi-wrap { flex:1; }
+    .bi-lbl { font-size:10px; color:var(--text3); margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em; }
+    .bi-wrap input { width:100%; }
 
-    input[type="text"]:focus, input[type="number"]:focus {
-      border-color: #999;
-    }
+    /* plan page */
+    .plan-res { border-radius:12px; padding:14px 16px; margin-bottom:10px; }
+    .plan-pos { background:var(--green-bg); } .plan-neg { background:var(--red-bg); }
+    .plbl { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+    .plan-pos .plbl { color:var(--green-text); } .plan-neg .plbl { color:var(--red-text); }
+    .pnum { font-size:36px; font-weight:700; margin-top:4px; }
+    .plan-pos .pnum { color:var(--green); } .plan-neg .pnum { color:var(--red); }
+    .psub { font-size:12px; margin-top:6px; opacity:.7; }
+    .plan-pos .psub { color:var(--green-text); } .plan-neg .psub { color:var(--red-text); }
 
-    input[type="text"] { flex: 1; min-width: 0; }
-    input[type="number"] { width: 110px; text-align: right; }
+    .slrow { display:flex; align-items:center; gap:10px; padding:8px 14px; border-bottom:1px solid var(--border2); }
+    .slrow:last-child { border-bottom:none; }
+    .sllbl { font-size:13px; color:var(--text2); flex:1; }
+    .slval { font-size:13px; font-weight:500; min-width:55px; text-align:right; }
+    input[type=range] { flex:1; accent-color:var(--blue); }
 
-    .remove-btn {
-      background: none;
-      border: none;
-      font-size: 18px;
-      color: #ccc;
-      cursor: pointer;
-      padding: 0 2px;
-      line-height: 1;
-    }
-    .remove-btn:hover { color: #e55; }
+    .sec-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text3); margin:16px 0 8px; }
 
-    .add-btn {
-      font-size: 13px;
-      color: #888;
-      background: none;
-      border: 1px dashed #ccc;
-      border-radius: 8px;
-      padding: 5px 12px;
-      cursor: pointer;
-      margin-top: 4px;
-      width: 100%;
-    }
-    .add-btn:hover { background: #f5f5f5; }
-
-    .result-zone {
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 10px;
-    }
-
-    .result-positive { background: #eaf3de; border: 1px solid #c0dd97; }
-    .result-negative { background: #fcebeb; border: 1px solid #f09595; }
-
-    .result-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-    .result-positive .result-label { color: #3b6d11; }
-    .result-negative .result-label { color: #a32d2d; }
-
-    .result-num { font-size: 34px; font-weight: 700; margin-top: 4px; }
-    .result-positive .result-num { color: #3b6d11; }
-    .result-negative .result-num { color: #a32d2d; }
-
-    .bar-track {
-      height: 7px;
-      background: #e0e0db;
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 12px;
-      display: flex;
-      gap: 2px;
-    }
-
-    .bar-seg { height: 100%; border-radius: 2px; transition: width 0.3s; }
-
-    .currency-btn {
-      font-size: 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 3px 10px;
-      background: #fff;
-      cursor: pointer;
-      color: #555;
-    }
-
-    .footer {
-      text-align: center;
-      font-size: 11px;
-      color: #bbb;
-      margin-top: 12px;
-      padding-bottom: 8px;
-    }
+    /* history page */
+    .hm { background:var(--surface); border:1px solid var(--border2); border-radius:12px; margin-bottom:8px; overflow:hidden; }
+    .hm-hdr { display:flex; align-items:center; padding:11px 14px; gap:8px; cursor:pointer; }
+    .hm-name { font-size:14px; font-weight:500; flex:1; }
+    .hbadge { font-size:10px; padding:2px 7px; border-radius:8px; font-weight:600; }
+    .hnet { font-size:14px; font-weight:600; }
+    .hm-body { border-top:1px solid var(--border2); padding:10px 14px; display:none; }
+    .hrow { display:flex; justify-content:space-between; font-size:13px; padding:3px 0; }
+    .hrow span:first-child { color:var(--text2); }
+    .hrow span:last-child { font-weight:500; }
+    .goto-btn { margin-top:8px; font-size:12px; padding:5px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); cursor:pointer; color:var(--text2); }
   </style>
 </head>
 <body>
-<div class="wrap">
 
-  <div class="top-bar">
-    <div class="app-title">Budget</div>
-    <div class="month-nav">
-      <button onclick="changeMonth(-1)">&#8249;</button>
-      <span id="month-label">March 2026</span>
-      <button onclick="changeMonth(1)">&#8250;</button>
+<nav class="nav">
+  <button class="nav-tab active" onclick="showPage('month')">This month</button>
+  <button class="nav-tab" onclick="showPage('plan')">Can I spend?</button>
+  <button class="nav-tab" onclick="showPage('history')">History</button>
+</nav>
+
+<!-- THIS MONTH -->
+<div class="page active" id="page-month">
+  <div class="topbar">
+    <div class="mnav">
+      <button class="mbtn" onclick="changeMonth(-1)">&#8249;</button>
+      <span class="mlabel" id="m-lbl"></span>
+      <button class="mbtn" onclick="changeMonth(1)">&#8250;</button>
     </div>
-    <button class="currency-btn" onclick="toggleCurrency()" id="cur-btn">UAH</button>
+    <button class="spill" id="s-pill" onclick="toggleStatus()"></button>
   </div>
 
-  <!-- Income -->
-  <div class="zone">
-    <div class="zone-header">
-      <div class="zone-dot" style="background:#3B6D11;"></div>
-      <span class="zone-title">Income</span>
-      <span class="zone-amount" id="income-total">0</span>
-    </div>
-    <div id="income-inputs"></div>
-    <button class="add-btn" onclick="addRow('income')">+ add income</button>
+  <div class="bstrip">
+    <div class="bcard"><div class="blbl">Opening</div><div class="bval" id="d-start">&#8212;</div></div>
+    <div class="bcard"><div class="blbl">Net</div><div class="bval" id="d-net">&#8212;</div></div>
+    <div class="bcard"><div class="blbl">Closing</div><div class="bval" id="d-end">&#8212;</div></div>
   </div>
 
-  <!-- Savings -->
-  <div class="zone">
-    <div class="zone-header">
-      <div class="zone-dot" style="background:#185FA5;"></div>
-      <span class="zone-title">Savings <span class="savings-pct" id="savings-pct"></span></span>
-      <span class="zone-amount" id="savings-total">0</span>
+  <div class="section">
+    <div class="sec-hdr" onclick="toggleSec('b-milestone')">
+      <div class="dot" style="background:var(--text3)"></div>
+      <span class="sec-name">Milestone / note</span>
+      <span class="chev" id="c-b-milestone">&#9662;</span>
     </div>
-    <div id="savings-inputs"></div>
-    <button class="add-btn" onclick="addRow('savings')">+ add savings goal</button>
-  </div>
-
-  <!-- Fixed costs -->
-  <div class="zone">
-    <div class="zone-header">
-      <div class="zone-dot" style="background:#BA7517;"></div>
-      <span class="zone-title">Fixed costs</span>
-      <span class="zone-amount" id="fixed-total">0</span>
-    </div>
-    <div id="fixed-inputs"></div>
-    <button class="add-btn" onclick="addRow('fixed')">+ add fixed cost</button>
-  </div>
-
-  <!-- Result -->
-  <div id="result-zone" class="result-zone result-positive">
-    <div class="result-label" id="result-label">Free to spend this month</div>
-    <div class="result-num" id="result-num">0</div>
-    <div class="bar-track">
-      <div class="bar-seg" id="bar-savings" style="background:#185FA5; width:0%;"></div>
-      <div class="bar-seg" id="bar-fixed" style="background:#BA7517; width:0%;"></div>
-      <div class="bar-seg" id="bar-free" style="background:#3B6D11; width:0%;"></div>
+    <div class="sec-body" id="b-milestone" style="display:none">
+      <div class="line-row">
+        <input type="text" id="milestone-in" placeholder="e.g. New salary, Side project&#8230;" style="flex:1" oninput="saveF('milestone',this.value)" />
+      </div>
     </div>
   </div>
 
-  <div class="footer">add to home screen in Safari for app experience</div>
+  <div class="section">
+    <div class="sec-hdr" onclick="toggleSec('b-income')">
+      <div class="dot" style="background:var(--green)"></div>
+      <span class="sec-name">&#1044;&#1086;&#1093;&#1086;&#1076;&#1080;</span>
+      <span class="sec-total" style="color:var(--green)" id="t-income">0</span>
+      <span class="chev open" id="c-b-income">&#9662;</span>
+    </div>
+    <div class="sec-body" id="b-income">
+      <div id="income-lines"></div>
+      <button class="add-btn" id="add-income" onclick="addLine('income')">+ add income</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-hdr" onclick="toggleSec('b-exp')">
+      <div class="dot" style="background:var(--amber)"></div>
+      <span class="sec-name">&#1042;&#1080;&#1090;&#1088;&#1072;&#1090;&#1080;</span>
+      <span class="sec-total" style="color:var(--amber)" id="t-exp">0</span>
+      <span class="chev open" id="c-b-exp">&#9662;</span>
+    </div>
+    <div class="sec-body" id="b-exp">
+      <div id="exp-lines"></div>
+      <button class="add-btn" id="add-exp" onclick="addLine('exp')">+ add expense</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-hdr" onclick="toggleSec('b-bal')">
+      <div class="dot" style="background:var(--blue)"></div>
+      <span class="sec-name">Balance &amp; reconciliation</span>
+      <span class="chev" id="c-b-bal">&#9662;</span>
+    </div>
+    <div class="sec-body" id="b-bal" style="display:none">
+      <div class="bal-inputs">
+        <div class="bi-wrap">
+          <div class="bi-lbl">Opening (K UAH)</div>
+          <input type="number" step="0.1" id="in-start" placeholder="0.0" oninput="saveF('startBal',this.value);recalc()" />
+        </div>
+        <div class="bi-wrap">
+          <div class="bi-lbl">Closing (K UAH)</div>
+          <input type="number" step="0.1" id="in-end" placeholder="0.0" oninput="saveF('endBal',this.value);recalc()" />
+        </div>
+      </div>
+      <div class="urow">
+        <span class="ulbl">Unexplained<br><span style="font-size:10px">closing &#8722; opening &#8722; income + expenses</span></span>
+        <span class="uval uok" id="u-val">&#8212;</span>
+      </div>
+      <div class="bwrap">
+        <div class="blabels"><span>income</span><span>expenses</span></div>
+        <div class="btrack">
+          <div class="bseg" id="b-inc" style="background:var(--green);width:50%"></div>
+          <div class="bseg" id="b-exb" style="background:var(--amber);width:50%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CAN I SPEND? -->
+<div class="page" id="page-plan">
+  <div class="plan-res plan-pos" id="plan-res">
+    <div class="plbl">Free to spend</div>
+    <div class="pnum" id="p-num">&#8212;</div>
+    <div class="psub" id="p-sub"></div>
+  </div>
+
+  <div class="sec-label">Adjust</div>
+  <div class="section">
+    <div class="slrow">
+      <span class="sllbl">Days left in month</span>
+      <input type="range" id="sl-days" min="1" max="31" step="1" oninput="updatePlan()" />
+      <span class="slval" id="sl-days-v">15d</span>
+    </div>
+    <div class="slrow">
+      <span class="sllbl">Expected extra income</span>
+      <input type="range" id="sl-extra" min="0" max="50" step="0.5" oninput="updatePlan()" />
+      <span class="slval" id="sl-extra-v">0K</span>
+    </div>
+    <div class="slrow">
+      <span class="sllbl">Expected extra cost</span>
+      <input type="range" id="sl-cost" min="0" max="50" step="0.5" oninput="updatePlan()" />
+      <span class="slval" id="sl-cost-v">0K</span>
+    </div>
+  </div>
+
+  <div class="sec-label">Breakdown</div>
+  <div class="section">
+    <div class="line-row"><span class="lname">Opening balance</span><span class="lval" id="p-open">&#8212;</span></div>
+    <div class="line-row"><span class="lname">Income so far</span><span class="lval" id="p-inc">&#8212;</span></div>
+    <div class="line-row"><span class="lname">Expenses so far</span><span class="lval" id="p-exp">&#8212;</span></div>
+    <div class="line-row" style="border-top:1px solid var(--border2)">
+      <span class="lname" style="font-weight:500">Available now</span>
+      <span class="lval" id="p-avail" style="font-weight:600">&#8212;</span>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="page" id="page-history">
+  <div class="sec-label">All months</div>
+  <div id="hist-list"></div>
 </div>
 
 <script>
-  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  let curDate = new Date(2026, 2);
-  let currency = 'UAH';
-  const CURRENCIES = ['UAH', 'USD', 'EUR'];
+const MS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-  const state = {
-    income:  [{ label: 'My salary', val: '' }, { label: 'Fiancée salary', val: '' }],
-    savings: [{ label: 'Emergency fund', val: '' }],
-    fixed:   [{ label: 'Rent', val: '' }, { label: 'Utilities', val: '' }]
-  };
+// ── SEED DATA from your Excel ──
+const SEED={
+  '2025-01':{closed:true,milestone:'',startBal:40.05,endBal:-31.92,income:[{n:'Kernel',v:12.61,note:''},{n:'Аналітика',v:8.27,note:''}],exp:[{n:'Flat',v:7.5,note:''},{n:'Noted',v:33,note:''},{n:'Food',v:28,note:''}]},
+  '2025-02':{closed:true,milestone:'New Salary',startBal:-31.92,endBal:-10.99,income:[{n:'Kernel',v:60,note:'new salary'}],exp:[{n:'Flat',v:7.5,note:''},{n:'Noted',v:20,note:''},{n:'Food',v:17,note:''}]},
+  '2025-03':{closed:true,milestone:'',startBal:-10.99,endBal:-9.86,income:[{n:'Kernel',v:66.5,note:''}],exp:[{n:'Flat',v:7.5,note:''},{n:'Noted',v:8.5,note:''},{n:'Food',v:33,note:''}]},
+  '2025-04':{closed:true,milestone:'New flat',startBal:-9.86,endBal:21.77,income:[{n:'Kernel',v:75.17,note:''}],exp:[{n:'Flat',v:7.5,note:''},{n:'Food',v:19,note:''}]},
+  '2025-05':{closed:true,milestone:'',startBal:21.77,endBal:-21.41,income:[{n:'Kernel',v:69.92,note:''}],exp:[{n:'Flat',v:28.5,note:'new flat'},{n:'Noted',v:10,note:''},{n:'Food',v:34,note:''}]},
+  '2025-06':{closed:true,milestone:'Help from Father',startBal:-21.41,endBal:-5.5,income:[{n:'Kernel',v:65.57,note:''}],exp:[{n:'Flat',v:21.37,note:''},{n:'Debt',v:1.0,note:''},{n:'Food',v:19,note:''}]},
+  '2025-07':{closed:true,milestone:'',startBal:-5.5,endBal:50.01,income:[{n:'Kernel',v:70.32,note:''},{n:'Аналітика',v:50,note:''}],exp:[{n:'Flat',v:22.73,note:''},{n:'Debt',v:1.0,note:''},{n:'Food',v:15,note:''}]},
+  '2025-08':{closed:true,milestone:'',startBal:50.01,endBal:57.71,income:[{n:'Kernel',v:75.25,note:''}],exp:[{n:'Flat',v:23.74,note:''},{n:'Debt',v:2.68,note:''},{n:'Food',v:18,note:''}]},
+  '2025-09':{closed:true,milestone:'Car',startBal:57.71,endBal:63.58,income:[{n:'Kernel',v:85.19,note:''}],exp:[{n:'Flat',v:23.45,note:''},{n:'Debt',v:2.68,note:''},{n:'Noted',v:14,note:'car related'},{n:'Food',v:18,note:''}]},
+  '2025-10':{closed:true,milestone:'',startBal:63.58,endBal:10.34,income:[{n:'Kernel',v:57.26,note:''},{n:'Аналітика',v:20.75,note:''}],exp:[{n:'Flat',v:23.55,note:''},{n:'Debt',v:2.68,note:''},{n:'Noted',v:63.46,note:''},{n:'Food',v:17,note:''}]},
+  '2025-11':{closed:true,milestone:'New Salary',startBal:10.34,endBal:10.14,income:[{n:'Kernel',v:79.77,note:'new salary'}],exp:[{n:'Flat',v:23.95,note:''},{n:'Debt',v:2.68,note:''},{n:'Noted',v:13,note:''},{n:'Food',v:15,note:''}]},
+  '2025-12':{closed:true,milestone:'',startBal:10.14,endBal:46.93,income:[{n:'Kernel',v:115.54,note:''}],exp:[{n:'Flat',v:25.22,note:''},{n:'Debt',v:2.68,note:''},{n:'Noted',v:10,note:''},{n:'Food',v:16,note:''}]},
+  '2026-01':{closed:true,milestone:'Side Project',startBal:46.93,endBal:null,income:[{n:'Kernel',v:40.9,note:''},{n:'Аналітика',v:0,note:''}],exp:[{n:'Flat',v:25.7,note:''},{n:'Debt',v:2.68,note:''},{n:'Noted',v:14.4,note:'3+9+1.2+1.2'},{n:'Auto',v:2.0,note:'0.5+1.5'},{n:'Food',v:13.45,note:'9.5+3.5+0.45'}]},
+  '2026-02':{closed:true,milestone:'Side Project',startBal:null,endBal:null,income:[{n:'Kernel',v:72.07,note:''},{n:'Аналітика',v:40,note:''}],exp:[{n:'Flat',v:25.3,note:''},{n:'Debt',v:2.68,note:''},{n:'Noted',v:40.1,note:'1.1+11+14+7+3+3+1'},{n:'Auto',v:7.4,note:'4.7+1.5+0.7+0.5'},{n:'Food',v:8,note:'2+6'}]},
+  '2026-03':{closed:false,milestone:'Side Project',startBal:null,endBal:null,income:[{n:'Kernel',v:76.3,note:''},{n:'Аналітика',v:40,note:''}],exp:[{n:'Flat',v:23.5,note:''},{n:'Debt',v:1.68,note:''},{n:'Noted',v:8.6,note:''},{n:'Auto',v:1.5,note:''}]},
+};
 
-  function fmt(n) {
-    return new Intl.NumberFormat('uk-UA', { maximumFractionDigits: 0 }).format(Math.round(n));
+let curKey='2026-03';
+
+function load(){try{const s=localStorage.getItem('bgt_v3');if(s){const p=JSON.parse(s);Object.keys(p).forEach(k=>SEED[k]=p[k]);}}catch(e){}}
+function save(){try{localStorage.setItem('bgt_v3',JSON.stringify(SEED));}catch(e){}}
+
+function keyOf(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function dateOf(k){const[y,m]=k.split('-').map(Number);return new Date(y,m-1);}
+function labelOf(k){const d=dateOf(k);return MS[d.getMonth()]+' '+d.getFullYear();}
+function prevKey(k){const[y,m]=k.split('-').map(Number);return m===1?(y-1)+'-12':y+'-'+String(m-1).padStart(2,'0');}
+function nextKey(k){const[y,m]=k.split('-').map(Number);return m===12?(y+1)+'-01':y+'-'+String(m+1).padStart(2,'0');}
+
+function getM(k){
+  if(!SEED[k]){
+    const p=SEED[prevKey(k)];
+    SEED[k]={closed:false,milestone:'',startBal:p?p.endBal:null,endBal:null,
+      income:[{n:'Kernel',v:'',note:''}],exp:[{n:'Flat',v:'',note:''},{n:'Food',v:'',note:''}]};
   }
+  return SEED[k];
+}
 
-  function sum(zone) {
-    return state[zone].reduce((a, r) => a + (parseFloat(r.val) || 0), 0);
-  }
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function n2(v){return isNaN(v)?'—':Number(v).toFixed(1);}
 
-  function renderZone(zone, containerId) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = '';
-    state[zone].forEach((row, i) => {
-      const div = document.createElement('div');
-      div.className = 'input-row';
-      div.innerHTML = `
-        <input type="text" placeholder="Name" value="${row.label}" oninput="state['${zone}'][${i}].label=this.value" />
-        <input type="number" placeholder="0" value="${row.val}" inputmode="numeric" oninput="state['${zone}'][${i}].val=this.value; recalc()" />
-        <button class="remove-btn" onclick="removeRow('${zone}',${i})">×</button>
-      `;
-      container.appendChild(div);
-    });
-  }
-
-  function addRow(zone) {
-    const labels = { income: 'Income source', savings: 'Savings goal', fixed: 'Fixed cost' };
-    state[zone].push({ label: labels[zone], val: '' });
-    renderZone(zone, zone + '-inputs');
-    recalc();
-  }
-
-  function removeRow(zone, i) {
-    state[zone].splice(i, 1);
-    renderZone(zone, zone + '-inputs');
-    recalc();
-  }
-
-  function recalc() {
-    const inc = sum('income');
-    const sav = sum('savings');
-    const fix = sum('fixed');
-    const free = inc - sav - fix;
-
-    document.getElementById('income-total').textContent = fmt(inc) + ' ' + currency;
-    document.getElementById('savings-total').textContent = fmt(sav) + ' ' + currency;
-    document.getElementById('fixed-total').textContent = fmt(fix) + ' ' + currency;
-    document.getElementById('result-num').textContent = fmt(Math.abs(free)) + ' ' + currency;
-
-    const pct = inc > 0 ? Math.round((sav / inc) * 100) : 0;
-    document.getElementById('savings-pct').textContent = inc > 0 ? pct + '% of income' : '';
-
-    const rz = document.getElementById('result-zone');
-    document.getElementById('result-label').textContent = free < 0 ? 'Over budget by' : 'Free to spend this month';
-    rz.className = 'result-zone ' + (free < 0 ? 'result-negative' : 'result-positive');
-
-    if (inc > 0) {
-      document.getElementById('bar-savings').style.width = Math.min(100, (sav / inc) * 100) + '%';
-      document.getElementById('bar-fixed').style.width = Math.min(100, (fix / inc) * 100) + '%';
-      document.getElementById('bar-free').style.width = Math.max(0, Math.min(100, (free / inc) * 100)) + '%';
-    } else {
-      ['bar-savings','bar-fixed','bar-free'].forEach(id => document.getElementById(id).style.width = '0%');
-    }
-  }
-
-  function changeMonth(dir) {
-    curDate.setMonth(curDate.getMonth() + dir);
-    document.getElementById('month-label').textContent = MONTHS[curDate.getMonth()] + ' ' + curDate.getFullYear();
-  }
-
-  function toggleCurrency() {
-    const idx = CURRENCIES.indexOf(currency);
-    currency = CURRENCIES[(idx + 1) % CURRENCIES.length];
-    document.getElementById('cur-btn').textContent = currency;
-    recalc();
-  }
-
-  renderZone('income', 'income-inputs');
-  renderZone('savings', 'savings-inputs');
-  renderZone('fixed', 'fixed-inputs');
+// ── RENDER MONTH ──
+function renderM(){
+  const data=getM(curKey);
+  const d=dateOf(curKey);
+  document.getElementById('m-lbl').textContent=MS[d.getMonth()]+' '+d.getFullYear();
+  const pill=document.getElementById('s-pill');
+  pill.textContent=data.closed?'closed':'open';
+  pill.className='spill '+(data.closed?'spill-closed':'spill-open');
+  document.getElementById('milestone-in').value=data.milestone||'';
+  document.getElementById('in-start').value=data.startBal!==null&&data.startBal!==undefined?data.startBal:'';
+  document.getElementById('in-end').value=data.endBal!==null&&data.endBal!==undefined?data.endBal:'';
+  const lk=data.closed;
+  document.getElementById('in-start').disabled=lk;
+  document.getElementById('in-end').disabled=lk;
+  document.getElementById('add-income').style.display=lk?'none':'block';
+  document.getElementById('add-exp').style.display=lk?'none':'block';
+  renderLines('income');
+  renderLines('exp');
   recalc();
+}
+
+function renderLines(zone){
+  const data=getM(curKey);
+  const rows=zone==='income'?data.income:data.exp;
+  const el=document.getElementById(zone+'-lines');
+  const lk=data.closed;
+  el.innerHTML='';
+  rows.forEach((row,i)=>{
+    const w=document.createElement('div');
+    w.innerHTML=`<div class="line-row">
+      <input class="iname" type="text" value="${esc(row.n)}" placeholder="Name" ${lk?'disabled':''} oninput="upLine('${zone}',${i},'n',this.value)"/>
+      <input class="ival" type="number" step="0.1" placeholder="0.0" value="${row.v!==''&&row.v!==null?Math.abs(Number(row.v)):''}" ${lk?'disabled':''} oninput="upLine('${zone}',${i},'v',this.value);recalc()"/>
+    </div>
+    <div class="note-wrap"><input class="inote" type="text" value="${esc(row.note||'')}" placeholder="note&#8230;" ${lk?'disabled':''} oninput="upLine('${zone}',${i},'note',this.value)"/></div>`;
+    el.appendChild(w);
+  });
+}
+
+function upLine(zone,i,f,v){
+  const rows=zone==='income'?getM(curKey).income:getM(curKey).exp;
+  rows[i][f]=v; save();
+}
+function addLine(zone){
+  const arr=zone==='income'?getM(curKey).income:getM(curKey).exp;
+  arr.push({n:zone==='income'?'Income':'Expense',v:'',note:''});
+  save(); renderLines(zone); recalc();
+}
+function saveF(f,v){
+  const d=getM(curKey);
+  d[f]=(f==='startBal'||f==='endBal')?(v===''?null:parseFloat(v)):v;
+  save();
+}
+
+function recalc(){
+  const data=getM(curKey);
+  const inc=data.income.reduce((a,r)=>a+(parseFloat(r.v)||0),0);
+  const exp=data.exp.reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0);
+  const net=inc-exp;
+  document.getElementById('t-income').textContent=inc.toFixed(1);
+  document.getElementById('t-exp').textContent=exp.toFixed(1);
+  const start=data.startBal; const end=data.endBal;
+  document.getElementById('d-start').textContent=start!==null&&start!==undefined?Math.abs(start).toFixed(1):'—';
+  document.getElementById('d-end').textContent=end!==null&&end!==undefined?end.toFixed(1):'—';
+  const ne=document.getElementById('d-net');
+  ne.textContent=(net>=0?'+':'')+net.toFixed(1);
+  ne.className='bval '+(net>=0?'vpos':'vneg');
+  const ue=document.getElementById('u-val');
+  if(start!==null&&start!==undefined&&end!==null&&end!==undefined){
+    const u=end-start-inc+exp;
+    ue.textContent=(u>=0?'+':'')+u.toFixed(1);
+    const a=Math.abs(u);
+    ue.className='uval '+(a<5?'uok':a<20?'uwarn':'ubad');
+  } else { ue.textContent='—'; ue.className='uval'; }
+  const tot=inc+exp;
+  if(tot>0){document.getElementById('b-inc').style.width=((inc/tot)*100)+'%';document.getElementById('b-exb').style.width=((exp/tot)*100)+'%';}
+}
+
+function toggleStatus(){
+  const data=getM(curKey);
+  if(!data.closed&&data.endBal!==null){
+    const nk=nextKey(curKey);const nd=getM(nk);
+    if(nd.startBal===null) nd.startBal=data.endBal;
+  }
+  data.closed=!data.closed; save(); renderM();
+}
+
+// ── PLAN ──
+function updatePlan(){
+  const data=getM(curKey);
+  const inc=data.income.reduce((a,r)=>a+(parseFloat(r.v)||0),0);
+  const exp=data.exp.reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0);
+  const start=data.startBal||0;
+  const avail=start+inc-exp;
+  const days=parseInt(document.getElementById('sl-days').value)||1;
+  const extra=parseFloat(document.getElementById('sl-extra').value)||0;
+  const cost=parseFloat(document.getElementById('sl-cost').value)||0;
+  document.getElementById('sl-days-v').textContent=days+'d';
+  document.getElementById('sl-extra-v').textContent=extra.toFixed(1)+'K';
+  document.getElementById('sl-cost-v').textContent=cost.toFixed(1)+'K';
+  const free=avail+extra-cost;
+  const pr=document.getElementById('plan-res');
+  pr.className='plan-res '+(free>=0?'plan-pos':'plan-neg');
+  document.getElementById('p-num').textContent=Math.abs(free).toFixed(1)+' K';
+  document.getElementById('p-sub').textContent=free>=0?`${free.toFixed(1)}K UAH available`:`${Math.abs(free).toFixed(1)}K over budget`;
+  document.getElementById('p-open').textContent=start.toFixed(1)+' K';
+  document.getElementById('p-inc').textContent='+'+inc.toFixed(1)+' K';
+  document.getElementById('p-exp').textContent='−'+exp.toFixed(1)+' K';
+  const ae=document.getElementById('p-avail');
+  ae.textContent=(avail>=0?'+':'')+avail.toFixed(1)+' K';
+  ae.style.color=avail>=0?'var(--green)':'var(--red)';
+}
+
+// ── HISTORY ──
+function renderHist(){
+  const c=document.getElementById('hist-list'); c.innerHTML='';
+  const keys=Object.keys(SEED).sort().reverse();
+  keys.forEach(k=>{
+    const data=SEED[k]; if(!data) return;
+    const inc=data.income?data.income.reduce((a,r)=>a+(parseFloat(r.v)||0),0):0;
+    const exp=data.exp?data.exp.reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0):0;
+    const net=inc-exp;
+    const div=document.createElement('div'); div.className='hm';
+    div.innerHTML=`<div class="hm-hdr" onclick="toggleHist('hb-${k}')">
+      <span class="hm-name">${labelOf(k)}</span>
+      ${data.milestone?`<span style="font-size:11px;color:var(--text3)">${esc(data.milestone)}</span>`:''}
+      <span class="hbadge" style="background:${data.closed?'var(--green-bg)':'var(--amber-bg)'};color:${data.closed?'var(--green-text)':'var(--amber-text)'}">${data.closed?'closed':'open'}</span>
+      <span class="hnet" style="color:${net>=0?'var(--green)':'var(--red)'}">${net>=0?'+':''}${net.toFixed(1)}</span>
+    </div>
+    <div class="hm-body" id="hb-${k}">
+      <div class="hrow"><span>Opening</span><span>${data.startBal!==null&&data.startBal!==undefined?data.startBal.toFixed(1)+'K':'—'}</span></div>
+      <div class="hrow"><span>Income</span><span style="color:var(--green)">+${inc.toFixed(1)}K</span></div>
+      <div class="hrow"><span>Expenses</span><span style="color:var(--amber)">−${exp.toFixed(1)}K</span></div>
+      <div class="hrow"><span>Closing</span><span>${data.endBal!==null&&data.endBal!==undefined?data.endBal.toFixed(1)+'K':'—'}</span></div>
+      ${(data.income||[]).filter(r=>r.v).map(r=>`<div class="hrow"><span style="padding-left:12px">${esc(r.n)}</span><span>+${Math.abs(parseFloat(r.v)||0).toFixed(1)}</span></div>`).join('')}
+      ${(data.exp||[]).filter(r=>r.v).map(r=>`<div class="hrow"><span style="padding-left:12px">${esc(r.n)}</span><span>−${Math.abs(parseFloat(r.v)||0).toFixed(1)}</span></div>`).join('')}
+      <button class="goto-btn" onclick="goToMonth('${k}')">Open this month &#8594;</button>
+    </div>`;
+    c.appendChild(div);
+  });
+}
+
+function toggleHist(id){const e=document.getElementById(id);e.style.display=e.style.display==='block'?'none':'block';}
+function goToMonth(k){curKey=k;showPage('month');renderM();}
+
+// ── UI ──
+function showPage(n){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+n).classList.add('active');
+  [{month:0,plan:1,history:2}[n]].forEach(i=>document.querySelectorAll('.nav-tab')[i].classList.add('active'));
+  if(n==='history') renderHist();
+  if(n==='plan') updatePlan();
+}
+
+function toggleSec(id){
+  const b=document.getElementById(id);const c=document.getElementById('c-'+id);
+  const o=b.style.display!=='none';
+  b.style.display=o?'none':'block';
+  c.className='chev'+(o?'':' open');
+}
+
+function changeMonth(dir){
+  const d=dateOf(curKey); d.setMonth(d.getMonth()+dir);
+  curKey=keyOf(d); renderM();
+}
+
+function initSliders(){
+  const now=new Date();
+  const dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const dl=dim-now.getDate();
+  document.getElementById('sl-days').value=dl;
+  document.getElementById('sl-days').max=dim;
+}
+
+load(); initSliders(); renderM();
 </script>
 </body>
 </html>
