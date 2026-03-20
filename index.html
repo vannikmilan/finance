@@ -589,12 +589,8 @@ function renderM(){
   const monthBalEntries=Object.entries(balCache).filter(([k])=>k.startsWith(monthPrefix)||k===curKey);
   const latestBalEntry=monthBalEntries.sort(([a],[b])=>b.localeCompare(a))[0];
   const balTotal=latestBalEntry?(latestBalEntry[1].total??null):null;
-  // update endBal from balance page if available
-  if(balTotal!==null&&data.endBal!==balTotal){
-    data.endBal=balTotal;
-    scheduleSave(curKey);
-  }
-  document.getElementById('in-end').value=data.endBal!=null?data.endBal.toFixed(2):'';
+  if(balTotal!==null&&data.endBal!==balTotal){data.endBal=balTotal;scheduleSave(curKey);}
+  document.getElementById('in-end').value=data.endBal!=null&&!isNaN(data.endBal)?Number(data.endBal).toFixed(2):'';
   document.getElementById('in-end').disabled=true;
   document.getElementById('close-notice').style.display=(!data.closed&&balTotal===null)?'block':'none';
 
@@ -602,13 +598,10 @@ function renderM(){
   document.getElementById('add-income').style.display=lk?'none':'block';
   document.getElementById('add-exp').style.display=lk?'none':'block';
   document.getElementById('add-savings').style.display=lk?'none':'block';
-  // live balance card — find most recent entry for this month
+  // live balance card
   const liveCard=document.getElementById('d-live-card');
   const liveEl=document.getElementById('d-live');
-  const monthPrefix=curKey+'-';
-  const monthEntries=Object.entries(balCache).filter(([k])=>k.startsWith(monthPrefix)||k===curKey);
-  const latestEntry=monthEntries.sort(([a],[b])=>b.localeCompare(a))[0];
-  const bData=latestEntry?latestEntry[1]:null;
+  const bData=latestBalEntry?latestBalEntry[1]:null;
   if(bData&&bData.total!==undefined){
     liveCard.style.display='block';
     document.getElementById('bstrip').className='bstrip four';
