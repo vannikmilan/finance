@@ -161,6 +161,11 @@
     .pb-lbl{flex:1;font-size:13px;color:var(--text2)}
     .pb-val{font-size:13px;font-weight:500}
 
+    .bal-slicer-wrap{margin-bottom:12px}
+    .bal-slicer-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+    .bal-slicer-row{display:flex;gap:8px;align-items:center}
+    .bal-slicer-row select{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 9px;font-size:13px;color:var(--text);outline:none}
+    .bal-slicer-hint{font-size:11px;color:var(--amber);margin-top:5px;min-height:16px}
     /* balance page */
     .bal-account{background:var(--surface);border:1px solid var(--border2);border-radius:12px;margin-bottom:8px;overflow:hidden}
     .bal-acc-hdr{display:flex;align-items:center;padding:10px 14px;gap:10px}
@@ -327,12 +332,14 @@
           <div class="bi-lbl">Opening K UAH</div>
           <input type="number" step="0.1" id="in-start" placeholder="auto" disabled/>
         </div>
-        <div class="bi-wrap" id="closing-wrap">
+        <div class="bi-wrap">
           <div class="bi-lbl">Closing K UAH</div>
-          <input type="number" step="0.1" id="in-end" placeholder="enter to close" oninput="saveF('endBal',this.value);recalc()"/>
+          <input type="number" step="0.1" id="in-end" placeholder="from Balance page" disabled/>
         </div>
       </div>
-      <div id="close-notice" class="close-notice" style="display:none">Enter closing balance above to close this month</div>
+      <div class="close-notice" id="close-notice" style="display:none">
+        Enter balance on the Balance tab first, then close the month
+      </div>
       <div class="urow">
         <span class="ulbl" id="u-lbl">Unexplained<br><span style="font-size:10px">closing − opening − income + expenses</span></span>
         <span class="uval" id="u-val">—</span>
@@ -395,25 +402,28 @@
 
 <!-- ══ BALANCE PAGE ══ -->
 <div class="page" id="page-balance">
-  <div class="bal-date-row">
-    <span class="bal-date-lbl">Balance as of <span id="bal-as-of">today</span></span>
-    <button class="bal-sync-btn" onclick="saveBalance()">Save balance</button>
+
+  <div class="bal-slicer-wrap">
+    <div class="bal-slicer-label">View or edit balance for date</div>
+    <div class="bal-slicer-row">
+      <select id="bal-date-select" onchange="onBalDateChange()"></select>
+      <button class="bal-sync-btn" onclick="saveBalance()">Save</button>
+    </div>
+    <div class="bal-slicer-hint" id="bal-slicer-hint"></div>
   </div>
 
-  <!-- total strip with history -->
   <div class="bal-total-strip">
     <div>
       <div class="bal-total-lbl">Total balance</div>
       <div class="bal-hist-dates" id="bal-hist-dates"></div>
     </div>
-    <div style="display:flex;gap:12px;align-items:center">
-      <div id="bal-prev2-total" style="font-size:13px;font-weight:500;color:var(--text3);text-align:right;min-width:48px"></div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <div id="bal-prev2-total" style="font-size:12px;font-weight:500;color:var(--text3);text-align:right;min-width:44px"></div>
       <div id="bal-prev1-total" style="font-size:13px;font-weight:500;color:var(--text2);text-align:right;min-width:48px"></div>
       <div class="bal-total-val" id="bal-total-val">—</div>
     </div>
   </div>
 
-  <!-- account rows: name | t-2 | t-1 | input -->
   <div id="bal-accounts"></div>
 </div>
 
@@ -478,27 +488,7 @@ const SEED={
 };
 
 // Balance seed — end of month snapshots from Balance sheet
-const BAL_SEED={
-  '2024-08':{mono:-25.68,monoJar:0,privat:-1.05,credi:19.9,cash:1.17,apt:0,envelope:0,total:-5.66},
-  '2024-09':{mono:-20.38,monoJar:0,privat:-47.11,credi:11.2,cash:0.85,apt:0,envelope:0,total:-55.44},
-  '2024-10':{mono:-19.85,monoJar:0,privat:-8.01,credi:0.01,cash:1.0,apt:0,envelope:0,total:-26.86},
-  '2024-11':{mono:-14.06,monoJar:0,privat:-14.05,credi:14.38,cash:0.2,apt:0,envelope:0,total:-13.54},
-  '2024-12':{mono:3.24,monoJar:0,privat:0.57,credi:20.23,cash:16.0,apt:0,envelope:0,total:40.05},
-  '2025-01':{mono:-24.98,monoJar:0,privat:-26.83,credi:1.91,cash:17.98,apt:0,envelope:0,total:-31.92},
-  '2025-02':{mono:-27.79,monoJar:0,privat:-31.25,credi:0.02,cash:48.03,apt:0,envelope:0,total:-10.99},
-  '2025-03':{mono:null,monoJar:0,privat:null,credi:null,cash:null,apt:0,envelope:0,total:-9.86},
-  '2025-04':{mono:-24.33,monoJar:0,privat:-11.8,credi:0.14,cash:57.75,apt:0,envelope:0,total:21.77},
-  '2025-05':{mono:-18.32,monoJar:0,privat:-42.48,credi:1.6,cash:37.79,apt:0,envelope:0,total:-21.41},
-  '2025-06':{mono:0.32,monoJar:0,privat:-54.17,credi:9.18,cash:39.17,apt:0,envelope:0,total:-5.5},
-  '2025-07':{mono:0.08,monoJar:0,privat:11.39,credi:0.5,cash:38.05,apt:0,envelope:0,total:50.01},
-  '2025-08':{mono:0.01,monoJar:0,privat:-1.61,credi:8.38,cash:50.93,apt:0,envelope:0,total:57.71},
-  '2025-09':{mono:11.54,monoJar:0,privat:0.24,credi:0.76,cash:51.04,apt:0,envelope:0,total:63.58},
-  '2025-10':{mono:12.78,monoJar:0,privat:-63.35,credi:13.51,cash:47.4,apt:0,envelope:0,total:10.34},
-  '2025-11':{mono:null,monoJar:0,privat:null,credi:null,cash:null,apt:0,envelope:0,total:10.14},
-  '2025-12':{mono:0.05,monoJar:0,privat:-12.41,credi:36.65,cash:22.64,apt:0,envelope:0,total:46.93},
-  '2026-01':{mono:0.15,monoJar:0,privat:-4.94,credi:3.06,cash:21.8,apt:0,envelope:0,total:20.07},
-  '2026-02':{mono:0.0,monoJar:0,privat:-3.73,credi:1.63,cash:0.05,apt:0,envelope:0,other:56.95,total:58.95},
-};
+const BAL_HISTORY=[{"date": "2025-01-01", "mono": 3.244, "monoJar": 0.0, "privat": 1.849, "credi": 20.235, "cash": 16.0, "apt": 0.0, "envelope": 0.0, "total": 41.328}, {"date": "2025-01-08", "mono": -6.237, "monoJar": 0.0, "privat": -7.08, "credi": 17.22, "cash": 13.48, "apt": 0.0, "envelope": 0.0, "total": 17.383}, {"date": "2025-01-11", "mono": -9.853, "monoJar": 0.0, "privat": -11.08, "credi": 15.22, "cash": 13.48, "apt": 0.0, "envelope": 0.0, "total": 7.767}, {"date": "2025-01-19", "mono": -20.997, "monoJar": 0.0, "privat": -6.055, "credi": 10.987, "cash": 17.98, "apt": 0.0, "envelope": 0.0, "total": 1.915}, {"date": "2025-01-26", "mono": -28.538, "monoJar": 0.0, "privat": -6.477, "credi": 5.685, "cash": 17.98, "apt": 0.0, "envelope": 0.0, "total": -11.35}, {"date": "2025-01-31", "mono": -24.977, "monoJar": 0.0, "privat": -26.832, "credi": 1.909, "cash": 17.98, "apt": 0.0, "envelope": 0.0, "total": -31.92}, {"date": "2025-02-07", "mono": -27.656, "monoJar": 0.0, "privat": -38.002, "credi": 26.909, "cash": 47.25, "apt": 0.0, "envelope": 0.0, "total": 8.501}, {"date": "2025-02-11", "mono": -28.206, "monoJar": 0.0, "privat": -38.002, "credi": 25.257, "cash": 45.4, "apt": 0.0, "envelope": 0.0, "total": 4.449}, {"date": "2025-02-16", "mono": -21.709, "monoJar": 0.0, "privat": -31.319, "credi": 1.143, "cash": 45.2, "apt": 0.0, "envelope": 0.0, "total": -6.685}, {"date": "2025-02-18", "mono": -23.365, "monoJar": 0.0, "privat": -31.319, "credi": 35.853, "cash": 45.2, "apt": 0.0, "envelope": 0.0, "total": 26.369}, {"date": "2025-02-21", "mono": -13.579, "monoJar": 0.0, "privat": -12.619, "credi": 2.939, "cash": 45.2, "apt": 0.0, "envelope": 0.0, "total": 21.941}, {"date": "2025-02-28", "mono": -27.792, "monoJar": 0.0, "privat": -31.254, "credi": 0.025, "cash": 48.03, "apt": 0.0, "envelope": 0.0, "total": -10.991}, {"date": "2025-03-03", "mono": -34.54, "monoJar": 0.0, "privat": -1.592, "credi": 6.646, "cash": 49.075, "apt": 0.0, "envelope": 0.0, "total": 19.589}, {"date": "2025-03-09", "mono": -9.111, "monoJar": 0.0, "privat": -34.54, "credi": 6.073, "cash": 48.475, "apt": 0.0, "envelope": 0.0, "total": 10.897}, {"date": "2025-03-13", "mono": -12.836, "monoJar": 0.0, "privat": -34.54, "credi": 5.435, "cash": 43.475, "apt": 0.0, "envelope": 0.0, "total": 1.534}, {"date": "2025-03-21", "mono": -23.712, "monoJar": 0.0, "privat": -8.84, "credi": 8.318, "cash": 43.475, "apt": 0.0, "envelope": 0.0, "total": 19.241}, {"date": "2025-03-25", "mono": -24.964, "monoJar": 0.0, "privat": -13.64, "credi": 0.83, "cash": 42.75, "apt": 0.0, "envelope": 0.0, "total": 4.976}, {"date": "2025-04-02", "mono": -28.073, "monoJar": 0.0, "privat": -25.367, "credi": 39.006, "cash": 42.75, "apt": 0.0, "envelope": 0.0, "total": 28.316}, {"date": "2025-04-08", "mono": -13.183, "monoJar": 0.0, "privat": -24.804, "credi": 6.293, "cash": 52.75, "apt": 0.0, "envelope": 0.0, "total": 21.056}, {"date": "2025-04-17", "mono": -21.923, "monoJar": 0.0, "privat": -24.571, "credi": 0.263, "cash": 51.55, "apt": 0.0, "envelope": 0.0, "total": 5.319}, {"date": "2025-04-21", "mono": -24.768, "monoJar": 0.0, "privat": -0.236, "credi": 9.133, "cash": 51.55, "apt": 0.0, "envelope": 0.0, "total": 35.679}, {"date": "2025-04-30", "mono": -24.327, "monoJar": 0.0, "privat": -11.802, "credi": 0.144, "cash": 57.75, "apt": 0.0, "envelope": 0.0, "total": 21.765}, {"date": "2025-05-07", "mono": -25.333, "monoJar": 0.0, "privat": -12.052, "credi": 7.89, "cash": 68.55, "apt": 0.0, "envelope": 0.0, "total": 39.055}, {"date": "2025-05-16", "mono": -29.522, "monoJar": 0.0, "privat": -16.541, "credi": 22.978, "cash": 69.9, "apt": 0.0, "envelope": 0.0, "total": 46.815}, {"date": "2025-05-18", "mono": -29.994, "monoJar": 0.0, "privat": -20.631, "credi": 18.97, "cash": 73.55, "apt": 0.0, "envelope": 0.0, "total": 41.895}, {"date": "2025-05-31", "mono": -18.321, "monoJar": 0.0, "privat": -42.482, "credi": 1.6, "cash": 37.79, "apt": 0.0, "envelope": 0.0, "total": -21.413}, {"date": "2025-06-06", "mono": 0.342, "monoJar": 0.0, "privat": -42.503, "credi": 10.808, "cash": 37.79, "apt": 0.0, "envelope": 0.0, "total": 6.437}, {"date": "2025-06-15", "mono": 0.944, "monoJar": 0.0, "privat": -51.243, "credi": 9.001, "cash": 38.45, "apt": 0.0, "envelope": 0.0, "total": -2.848}, {"date": "2025-06-23", "mono": 0.169, "monoJar": 0.0, "privat": -43.843, "credi": 8.795, "cash": 39.01, "apt": 0.0, "envelope": 0.0, "total": 4.131}, {"date": "2025-06-29", "mono": 0.819, "monoJar": 0.0, "privat": -55.218, "credi": 9.179, "cash": 39.01, "apt": 0.0, "envelope": 0.0, "total": -6.21}, {"date": "2025-06-30", "mono": 0.319, "monoJar": 0.0, "privat": -54.169, "credi": 9.179, "cash": 39.17, "apt": 0.0, "envelope": 0.0, "total": -5.501}, {"date": "2025-07-02", "mono": 0.278, "monoJar": 0.0, "privat": -37.126, "credi": 25.921, "cash": 39.17, "apt": 0.0, "envelope": 0.0, "total": 28.243}, {"date": "2025-07-04", "mono": 0.278, "monoJar": 0.0, "privat": 33.704, "credi": 3.916, "cash": 38.97, "apt": 0.0, "envelope": 0.0, "total": 76.868}, {"date": "2025-07-06", "mono": 1.736, "monoJar": 0.0, "privat": 30.183, "credi": 3.876, "cash": 38.97, "apt": 0.0, "envelope": 0.0, "total": 74.765}, {"date": "2025-07-13", "mono": 0.29, "monoJar": 0.0, "privat": 24.251, "credi": 0.801, "cash": 38.25, "apt": 0.0, "envelope": 0.0, "total": 63.592}, {"date": "2025-07-15", "mono": 0.29, "monoJar": 0.0, "privat": 23.47, "credi": 0.054, "cash": 37.97, "apt": 0.0, "envelope": 0.0, "total": 61.784}, {"date": "2025-07-19", "mono": 0.159, "monoJar": 0.0, "privat": 22.37, "credi": 31.6, "cash": 37.97, "apt": 0.0, "envelope": 0.0, "total": 92.099}, {"date": "2025-08-01", "mono": 0.083, "monoJar": 0.0, "privat": 11.386, "credi": 0.495, "cash": 38.05, "apt": 0.0, "envelope": 0.0, "total": 50.014}, {"date": "2025-08-05", "mono": 0.042, "monoJar": 0.0, "privat": 8.982, "credi": 25.853, "cash": 50.539, "apt": 0.0, "envelope": 0.0, "total": 85.416}, {"date": "2025-08-25", "mono": 0.011, "monoJar": 0.0, "privat": 7.981, "credi": 10.734, "cash": 52.539, "apt": 0.0, "envelope": 0.0, "total": 71.265}, {"date": "2025-08-31", "mono": 0.011, "monoJar": 0.0, "privat": -1.614, "credi": 8.383, "cash": 50.929, "apt": 0.0, "envelope": 0.0, "total": 57.709}, {"date": "2025-09-03", "mono": 6.411, "monoJar": 0.0, "privat": 8.886, "credi": 21.437, "cash": 50.929, "apt": 0.0, "envelope": 0.0, "total": 87.663}, {"date": "2025-09-14", "mono": 9.94, "monoJar": 0.0, "privat": 9.106, "credi": 21.063, "cash": 50.639, "apt": 0.0, "envelope": 0.0, "total": 90.748}, {"date": "2025-09-27", "mono": 12.636, "monoJar": 0.0, "privat": 0.245, "credi": 4.589, "cash": 51.039, "apt": 0.0, "envelope": 0.0, "total": 68.509}, {"date": "2025-09-30", "mono": 11.538, "monoJar": 0.0, "privat": 0.245, "credi": 0.762, "cash": 51.039, "apt": 0.0, "envelope": 0.0, "total": 63.584}, {"date": "2025-10-06", "mono": 13.893, "monoJar": 0.0, "privat": -1.33, "credi": 0.592, "cash": 68.539, "apt": 0.0, "envelope": 0.0, "total": 81.694}, {"date": "2025-10-09", "mono": 12.757, "monoJar": 0.0, "privat": -3.289, "credi": 0.192, "cash": 68.539, "apt": 0.0, "envelope": 0.0, "total": 78.199}, {"date": "2025-10-12", "mono": 8.018, "monoJar": 0.0, "privat": -4.229, "credi": 0.141, "cash": 68.539, "apt": 0.0, "envelope": 0.0, "total": 72.469}, {"date": "2025-10-15", "mono": 7.368, "monoJar": 0.0, "privat": -21.379, "credi": 0.141, "cash": 88.379, "apt": 0.0, "envelope": 0.0, "total": 74.509}, {"date": "2025-10-21", "mono": 12.978, "monoJar": 0.0, "privat": -30.599, "credi": 16.492, "cash": 71.489, "apt": 0.0, "envelope": 0.0, "total": 70.36}, {"date": "2025-10-28", "mono": 12.778, "monoJar": 0.0, "privat": -55.55, "credi": 14.329, "cash": 47.397, "apt": 0.0, "envelope": 0.0, "total": 18.954}, {"date": "2025-10-31", "mono": 12.778, "monoJar": 0.0, "privat": -63.349, "credi": 13.511, "cash": 47.397, "apt": 0.0, "envelope": 0.0, "total": 10.337}, {"date": "2025-11-19", "mono": 11.215, "monoJar": 0.0, "privat": -45.002, "credi": 44.848, "cash": 50.307, "apt": 0.0, "envelope": 0.0, "total": 61.368}, {"date": "2025-12-03", "mono": 1.896, "monoJar": 0.0, "privat": -29.407, "credi": 45.278, "cash": 37.157, "apt": 0.0, "envelope": 0.0, "total": 54.924}, {"date": "2025-12-07", "mono": 0.096, "monoJar": 0.0, "privat": 1.16, "credi": 4.524, "cash": 38.817, "apt": 0.0, "envelope": 0.0, "total": 44.597}, {"date": "2025-12-19", "mono": 0.378, "monoJar": 0.0, "privat": -10.77, "credi": 16.88, "cash": 46.27, "apt": 0.0, "envelope": 0.0, "total": 52.758}, {"date": "2025-12-28", "mono": 0.328, "monoJar": 0.0, "privat": -10.07, "credi": 8.584, "cash": 22.64, "apt": 0.0, "envelope": 0.0, "total": 21.482}, {"date": "2025-12-30", "mono": 0.328, "monoJar": 0.0, "privat": -10.92, "credi": 0.023, "cash": 22.64, "apt": 0.0, "envelope": 0.0, "total": 12.071}, {"date": "2025-12-31", "mono": 0.048, "monoJar": 0.0, "privat": -12.41, "credi": 36.65, "cash": 22.64, "apt": 0.0, "envelope": 0.0, "total": 46.928}, {"date": "2026-01-09", "mono": 0.006, "monoJar": 0.0, "privat": -1.01, "credi": 12.862, "cash": 21.8, "apt": 0.0, "envelope": 0.0, "total": 33.658}, {"date": "2026-01-22", "mono": 0.343, "monoJar": 0.0, "privat": -3.799, "credi": 33.924, "cash": 21.8, "apt": 0.0, "envelope": 0.0, "total": 52.268}, {"date": "2026-01-25", "mono": 0.343, "monoJar": 0.0, "privat": -3.799, "credi": 3.236, "cash": 21.8, "apt": 0.0, "envelope": 0.0, "total": 21.58}, {"date": "2026-01-31", "mono": 0.148, "monoJar": 0.0, "privat": -4.94, "credi": 3.06, "cash": 21.8, "apt": 0.0, "envelope": 0.0, "total": 20.068}, {"date": "2026-02-02", "mono": 0.148, "monoJar": 0.0, "privat": -4.94, "credi": 33.388, "cash": 21.8, "apt": 0.0, "envelope": 0.0, "total": 50.396}, {"date": "2026-02-09", "mono": 32.379, "monoJar": 0.0, "privat": -5.949, "credi": 2.214, "cash": 42.255, "apt": 0.0, "envelope": 0.0, "total": 70.899}, {"date": "2026-02-18", "mono": 24.445, "monoJar": 0.0, "privat": -8.73, "credi": 0.284, "cash": 42.255, "apt": 0.0, "envelope": 0.0, "total": 58.254}, {"date": "2026-02-28", "mono": 0.0, "monoJar": 0.0, "privat": -3.73, "credi": 1.631, "cash": 0.05, "apt": 0.0, "envelope": 0.0, "total": -2.049}, {"date": "2026-03-10", "mono": 0.014, "monoJar": 20.0, "privat": -7.95, "credi": 19.919, "cash": 0.35, "apt": 21.0, "envelope": 20.0, "total": 73.333}];
 
 const MS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 let curKey='2026-03';
@@ -523,10 +513,18 @@ function fmtDate(ts){if(!ts)return '';const d=new Date(ts);return d.toLocaleDate
 
 async function seedFirestore(){
   const snap=await getDocs(collection(db,'months'));
-  if(!snap.empty)return;
+  if(!snap.empty){
+    // seed balances if missing
+    const bSnap=await getDocs(collection(db,'balances'));
+    if(bSnap.empty){
+      syncStatus('saving','uploading balance history…');
+      for(const r of BAL_HISTORY) await setDoc(doc(db,'balances',r.date),r);
+    }
+    return;
+  }
   syncStatus('saving','uploading history…');
   for(const[k,d]of Object.entries(SEED)) await setDoc(docRef(k),d);
-  for(const[k,d]of Object.entries(BAL_SEED)) await setDoc(balRef(k),d);
+  for(const r of BAL_HISTORY) await setDoc(doc(db,'balances',r.date),r);
 }
 
 async function loadMonth(k){
@@ -586,19 +584,31 @@ function renderM(){
   document.getElementById('in-start').value=data.startBal??'';
   document.getElementById('in-start').disabled=true;
 
-  // closing input — only editable on open months
-  document.getElementById('in-end').value=data.endBal??'';
-  document.getElementById('in-end').disabled=data.closed;
-  document.getElementById('close-notice').style.display=(!data.closed&&!data.endBal)?'block':'none';
+  // closing — always from balance page (most recent entry for this month), never manually entered
+  const monthPrefix=curKey+'-';
+  const monthBalEntries=Object.entries(balCache).filter(([k])=>k.startsWith(monthPrefix)||k===curKey);
+  const latestBalEntry=monthBalEntries.sort(([a],[b])=>b.localeCompare(a))[0];
+  const balTotal=latestBalEntry?(latestBalEntry[1].total??null):null;
+  // update endBal from balance page if available
+  if(balTotal!==null&&data.endBal!==balTotal){
+    data.endBal=balTotal;
+    scheduleSave(curKey);
+  }
+  document.getElementById('in-end').value=data.endBal!=null?data.endBal.toFixed(2):'';
+  document.getElementById('in-end').disabled=true;
+  document.getElementById('close-notice').style.display=(!data.closed&&balTotal===null)?'block':'none';
 
   const lk=data.closed;
   document.getElementById('add-income').style.display=lk?'none':'block';
   document.getElementById('add-exp').style.display=lk?'none':'block';
   document.getElementById('add-savings').style.display=lk?'none':'block';
-  // live balance card — show if we have a balance entry for this month
+  // live balance card — find most recent entry for this month
   const liveCard=document.getElementById('d-live-card');
   const liveEl=document.getElementById('d-live');
-  const bData=balCache[curKey];
+  const monthPrefix=curKey+'-';
+  const monthEntries=Object.entries(balCache).filter(([k])=>k.startsWith(monthPrefix)||k===curKey);
+  const latestEntry=monthEntries.sort(([a],[b])=>b.localeCompare(a))[0];
+  const bData=latestEntry?latestEntry[1]:null;
   if(bData&&bData.total!==undefined){
     liveCard.style.display='block';
     document.getElementById('bstrip').className='bstrip four';
@@ -751,15 +761,15 @@ window.saveF=function(f,v){
 };
 window.toggleStatus=function(){
   const data=cache[curKey];
-  // require endBal to close
-  if(!data.closed&&!data.endBal){
-    document.getElementById('b-bal').style.display='block';
-    document.getElementById('c-b-bal').className='chev open';
-    document.getElementById('close-notice').style.display='block';
-    alert('Enter the closing balance first to close the month.');
-    return;
-  }
   if(!data.closed){
+    // endBal must come from balance page
+    if(!data.endBal){
+      document.getElementById('b-bal').style.display='block';
+      document.getElementById('c-b-bal').className='chev open';
+      document.getElementById('close-notice').style.display='block';
+      alert('Go to the Balance tab and save a balance entry for this month first.');
+      return;
+    }
     // propagate closing → next month opening
     const nk=nextKey(curKey);const nd=getOrBlank(nk);
     if(nd.startBal===null){nd.startBal=data.endBal;scheduleSave(nk);}
@@ -822,42 +832,96 @@ const BAL_ACCOUNTS=[
   {id:'envelope', label:'Конверт',         color:'#3B6D11'},
 ];
 
-function renderBalancePage(){
-  const now=new Date();
-  document.getElementById('bal-as-of').textContent=now.toLocaleDateString('uk-UA',{day:'numeric',month:'long',year:'numeric'});
+// merged history: BAL_HISTORY (excel) + balCache (firebase entries), keyed by date string
+function getMergedHistory(){
+  const map={};
+  // seed from excel
+  BAL_HISTORY.forEach(r=>{ map[r.date]=Object.assign({},r); });
+  // overlay with firebase saved entries (newer wins)
+  Object.values(balCache).forEach(b=>{
+    if(b.date){ const k=b.date.slice(0,10); map[k]=Object.assign({},b,{date:k}); }
+  });
+  return Object.values(map).sort((a,b)=>a.date.localeCompare(b.date));
+}
 
-  // find last 2 saved entries by date desc
-  const entries=Object.values(balCache).filter(b=>b.date).sort((a,b)=>new Date(b.date)-new Date(a.date));
-  const prev1=entries[0]||null;
-  const prev2=entries[1]||null;
-  const fmtD=b=>b?new Date(b.date).toLocaleDateString('uk-UA',{day:'numeric',month:'short'}):null;
-  const d1=fmtD(prev2); const d2=fmtD(prev1);
-  document.getElementById('bal-hist-dates').textContent=[d1&&`t−2: ${d1}`,d2&&`t−1: ${d2}`].filter(Boolean).join('   ');
-  const p2tv=document.getElementById('bal-prev2-total');
-  const p1tv=document.getElementById('bal-prev1-total');
-  p2tv.textContent=prev2?(prev2.total??0).toFixed(1)+'K':'';
-  p1tv.textContent=prev1?(prev1.total??0).toFixed(1)+'K':'';
+let selectedBalDate=''; // currently selected date in slicer
 
-  const curBal=balCache[keyOf(now)]||{};
+function populateBalSlicer(){
+  const sel=document.getElementById('bal-date-select');
+  const history=getMergedHistory();
+  const today=new Date().toISOString().slice(0,10);
+  sel.innerHTML='';
+
+  // option for today if not already in history
+  const hasToday=history.some(r=>r.date===today);
+  if(!hasToday){
+    const opt=document.createElement('option');
+    opt.value='__today__';
+    opt.textContent='Today — new entry';
+    sel.appendChild(opt);
+  }
+
+  // all historical dates newest first
+  [...history].reverse().forEach(r=>{
+    const opt=document.createElement('option');
+    opt.value=r.date;
+    const d=new Date(r.date);
+    opt.textContent=d.toLocaleDateString('uk-UA',{day:'numeric',month:'short',year:'numeric'})+' — '+r.total.toFixed(1)+'K';
+    sel.appendChild(opt);
+  });
+
+  // default to today or most recent
+  if(!selectedBalDate) selectedBalDate=hasToday?today:'__today__';
+  sel.value=selectedBalDate;
+  onBalDateChange();
+}
+
+window.onBalDateChange=function(){
+  const sel=document.getElementById('bal-date-select');
+  selectedBalDate=sel.value;
+  const history=getMergedHistory();
+  const isNew=selectedBalDate==='__today__';
+  const today=new Date().toISOString().slice(0,10);
+  const dateKey=isNew?today:selectedBalDate;
+
+  document.getElementById('bal-slicer-hint').textContent=
+    isNew?'New entry — will be saved to database':'Editing existing entry — save to update';
+
+  // find entry
+  const entry=history.find(r=>r.date===dateKey)||null;
+
+  // prev 2 entries before selected date
+  const before=history.filter(r=>r.date<dateKey);
+  const prev1=before.length>=1?before[before.length-1]:null;
+  const prev2=before.length>=2?before[before.length-2]:null;
+
+  // labels
+  const fmtD=r=>{if(!r)return null;const d=new Date(r.date);return d.toLocaleDateString('uk-UA',{day:'numeric',month:'short'});};
+  document.getElementById('bal-hist-dates').textContent=
+    [prev2&&`t−2: ${fmtD(prev2)}`, prev1&&`t−1: ${fmtD(prev1)}`].filter(Boolean).join('   ');
+  document.getElementById('bal-prev2-total').textContent=prev2?prev2.total.toFixed(1)+'K':'';
+  document.getElementById('bal-prev1-total').textContent=prev1?prev1.total.toFixed(1)+'K':'';
+
+  // render account rows
   const container=document.getElementById('bal-accounts');
   container.innerHTML='';
   BAL_ACCOUNTS.forEach(acc=>{
-    const v1=prev2!=null?(prev2[acc.id]??null):null;
-    const v2=prev1!=null?(prev1[acc.id]??null):null;
-    const cur=curBal[acc.id]??'';
+    const v1=prev2!=null?(prev2[acc.id]??0):null;
+    const v2=prev1!=null?(prev1[acc.id]??0):null;
+    const cur=entry?(entry[acc.id]??0):0;
     const div=document.createElement('div'); div.className='bal-account';
     div.innerHTML=`<div class="bal-acc-hdr">
       <div class="dot" style="background:${acc.color}"></div>
       <span class="bal-acc-name">${acc.label}</span>
-      <span class="bal-hist-val">${v1!==null?v1.toFixed(2):''}</span>
-      <span class="bal-hist-val t1">${v2!==null?v2.toFixed(2):''}</span>
+      <span class="bal-hist-val">${v1!==null&&v1!==0?v1.toFixed(2):v1===0&&prev2?'0':''}</span>
+      <span class="bal-hist-val t1">${v2!==null&&v2!==0?v2.toFixed(2):v2===0&&prev1?'0':''}</span>
       <input type="number" step="0.01" class="bal-acc-input" id="bal-${acc.id}"
-        placeholder="0.00" value="${cur!==''?Number(cur).toFixed(2):''}" oninput="recalcBalance()"/>
+        placeholder="0.00" value="${cur!==0?cur.toFixed(2):''}" oninput="recalcBalance()"/>
     </div>`;
     container.appendChild(div);
   });
   recalcBalance();
-}
+};
 
 window.recalcBalance=function(){
   let total=0;
@@ -868,17 +932,23 @@ window.recalcBalance=function(){
 };
 
 window.saveBalance=async function(){
-  const now=new Date(); const k=keyOf(now);
-  const b={date:now.toISOString()};
+  const isNew=selectedBalDate==='__today__';
+  const today=new Date().toISOString().slice(0,10);
+  const dateKey=isNew?today:selectedBalDate;
+  const b={date:dateKey};
   BAL_ACCOUNTS.forEach(acc=>{const el=document.getElementById('bal-'+acc.id);b[acc.id]=el?parseFloat(el.value)||0:0;});
   b.total=BAL_ACCOUNTS.reduce((s,acc)=>s+(b[acc.id]||0),0);
-  balCache[k]=b;
+
+  // store in balCache keyed by date
+  balCache[dateKey]=b;
   syncStatus('saving','saving balance…');
   try{
-    await setDoc(balRef(k),b);
+    await setDoc(doc(db,'balances',dateKey),b);
     syncStatus('saved','balance saved');
-    if(curKey===k) renderM();
-    renderBalancePage();
+    selectedBalDate=dateKey;
+    populateBalSlicer();
+    // refresh month page if this date falls in current month
+    if(dateKey.slice(0,7)===curKey) renderM();
   }catch(e){syncStatus('error','save failed');}
 };
 
@@ -956,7 +1026,7 @@ window.showPage=async function(n){
   document.querySelectorAll('.nav-tab')[idx].classList.add('active');
   if(n==='history')await renderHist();
   if(n==='plan')updatePlan();
-  if(n==='balance')renderBalancePage();
+  if(n==='balance')populateBalSlicer();
 };
 window.toggleSec=function(id){
   const b=document.getElementById(id);const c=document.getElementById('c-'+id);
@@ -980,7 +1050,6 @@ window.changeMonth=async function(dir){
   syncStatus('saving','connecting…');
   try{
     await seedFirestore();
-    // pre-load balances
     const bSnap=await getDocs(collection(db,'balances'));
     bSnap.forEach(d=>{balCache[d.id]=d.data();});
     await loadMonth(prevKey(curKey));
