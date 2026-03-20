@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Budget" />
+  <title>Budget</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f0;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding: env(safe-area-inset-top, 16px) 16px env(safe-area-inset-bottom, 16px);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body { background: #111; color: #f0f0f0; }
+      .zone { background: #1e1e1e; border-color: rgba(255,255,255,0.1); }
+      input { background: #2a2a2a; border-color: rgba(255,255,255,0.15); color: #f0f0f0; }
+      .add-btn { border-color: rgba(255,255,255,0.2); color: #aaa; }
+      .add-btn:hover { background: #2a2a2a; }
+      .month-nav button { background: #2a2a2a; border-color: rgba(255,255,255,0.1); color: #ccc; }
+      .bar-track { background: #2a2a2a; }
+      .zone-title { color: #aaa; }
+      .input-label { color: #aaa; }
+      .savings-pct { color: #888; }
+    }
+
+    .wrap { max-width: 480px; margin: 0 auto; padding-top: 12px; }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .app-title { font-size: 20px; font-weight: 600; }
+
+    .month-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .month-nav button {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: #fff;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .zone {
+      background: #fff;
+      border: 1px solid #e8e8e4;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+
+    .zone-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .zone-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .zone-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; flex: 1; }
+    .zone-amount { font-size: 20px; font-weight: 600; }
+    .savings-pct { font-size: 11px; color: #888; margin-left: 2px; }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .input-label {
+      flex: 1;
+      font-size: 13px;
+      color: #555;
+      min-width: 0;
+    }
+
+    input[type="text"], input[type="number"] {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus {
+      border-color: #999;
+    }
+
+    input[type="text"] { flex: 1; min-width: 0; }
+    input[type="number"] { width: 110px; text-align: right; }
+
+    .remove-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: #ccc;
+      cursor: pointer;
+      padding: 0 2px;
+      line-height: 1;
+    }
+    .remove-btn:hover { color: #e55; }
+
+    .add-btn {
+      font-size: 13px;
+      color: #888;
+      background: none;
+      border: 1px dashed #ccc;
+      border-radius: 8px;
+      padding: 5px 12px;
+      cursor: pointer;
+      margin-top: 4px;
+      width: 100%;
+    }
+    .add-btn:hover { background: #f5f5f5; }
+
+    .result-zone {
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 10px;
+    }
+
+    .result-positive { background: #eaf3de; border: 1px solid #c0dd97; }
+    .result-negative { background: #fcebeb; border: 1px solid #f09595; }
+
+    .result-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .result-positive .result-label { color: #3b6d11; }
+    .result-negative .result-label { color: #a32d2d; }
+
+    .result-num { font-size: 34px; font-weight: 700; margin-top: 4px; }
+    .result-positive .result-num { color: #3b6d11; }
+    .result-negative .result-num { color: #a32d2d; }
+
+    .bar-track {
+      height: 7px;
+      background: #e0e0db;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 12px;
+      display: flex;
+      gap: 2px;
+    }
+
+    .bar-seg { height: 100%; border-radius: 2px; transition: width 0.3s; }
+
+    .currency-btn {
+      font-size: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 3px 10px;
+      background: #fff;
+      cursor: pointer;
+      color: #555;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 11px;
+      color: #bbb;
+      margin-top: 12px;
+      padding-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top-bar">
+    <div class="app-title">Budget</div>
+    <div class="month-nav">
+      <button onclick="changeMonth(-1)">&#8249;</button>
+      <span id="month-label">March 2026</span>
+      <button onclick="changeMonth(1)">&#8250;</button>
+    </div>
+    <button class="currency-btn" onclick="toggleCurrency()" id="cur-btn">UAH</button>
+  </div>
+
+  <!-- Income -->
+  <div class="zone">
+    <div class="zone-header">
+      <div class="zone-dot" style="background:#3B6D11;"></div>
+      <span class="zone-title">Income</span>
+      <span class="zone-amount" id="income-total">0</span>
+    </div>
+    <div id="income-inputs"></div>
+    <button class="add-btn" onclick="addRow('income')">+ add income</button>
+  </div>
+
+  <!-- Savings -->
+  <div class="zone">
+    <div class="zone-header">
+      <div class="zone-dot" style="background:#185FA5;"></div>
+      <span class="zone-title">Savings <span class="savings-pct" id="savings-pct"></span></span>
+      <span class="zone-amount" id="savings-total">0</span>
+    </div>
+    <div id="savings-inputs"></div>
+    <button class="add-btn" onclick="addRow('savings')">+ add savings goal</button>
+  </div>
+
+  <!-- Fixed costs -->
+  <div class="zone">
+    <div class="zone-header">
+      <div class="zone-dot" style="background:#BA7517;"></div>
+      <span class="zone-title">Fixed costs</span>
+      <span class="zone-amount" id="fixed-total">0</span>
+    </div>
+    <div id="fixed-inputs"></div>
+    <button class="add-btn" onclick="addRow('fixed')">+ add fixed cost</button>
+  </div>
+
+  <!-- Result -->
+  <div id="result-zone" class="result-zone result-positive">
+    <div class="result-label" id="result-label">Free to spend this month</div>
+    <div class="result-num" id="result-num">0</div>
+    <div class="bar-track">
+      <div class="bar-seg" id="bar-savings" style="background:#185FA5; width:0%;"></div>
+      <div class="bar-seg" id="bar-fixed" style="background:#BA7517; width:0%;"></div>
+      <div class="bar-seg" id="bar-free" style="background:#3B6D11; width:0%;"></div>
+    </div>
+  </div>
+
+  <div class="footer">add to home screen in Safari for app experience</div>
+</div>
+
+<script>
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let curDate = new Date(2026, 2);
+  let currency = 'UAH';
+  const CURRENCIES = ['UAH', 'USD', 'EUR'];
+
+  const state = {
+    income:  [{ label: 'My salary', val: '' }, { label: 'Fiancée salary', val: '' }],
+    savings: [{ label: 'Emergency fund', val: '' }],
+    fixed:   [{ label: 'Rent', val: '' }, { label: 'Utilities', val: '' }]
+  };
+
+  function fmt(n) {
+    return new Intl.NumberFormat('uk-UA', { maximumFractionDigits: 0 }).format(Math.round(n));
+  }
+
+  function sum(zone) {
+    return state[zone].reduce((a, r) => a + (parseFloat(r.val) || 0), 0);
+  }
+
+  function renderZone(zone, containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    state[zone].forEach((row, i) => {
+      const div = document.createElement('div');
+      div.className = 'input-row';
+      div.innerHTML = `
+        <input type="text" placeholder="Name" value="${row.label}" oninput="state['${zone}'][${i}].label=this.value" />
+        <input type="number" placeholder="0" value="${row.val}" inputmode="numeric" oninput="state['${zone}'][${i}].val=this.value; recalc()" />
+        <button class="remove-btn" onclick="removeRow('${zone}',${i})">×</button>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function addRow(zone) {
+    const labels = { income: 'Income source', savings: 'Savings goal', fixed: 'Fixed cost' };
+    state[zone].push({ label: labels[zone], val: '' });
+    renderZone(zone, zone + '-inputs');
+    recalc();
+  }
+
+  function removeRow(zone, i) {
+    state[zone].splice(i, 1);
+    renderZone(zone, zone + '-inputs');
+    recalc();
+  }
+
+  function recalc() {
+    const inc = sum('income');
+    const sav = sum('savings');
+    const fix = sum('fixed');
+    const free = inc - sav - fix;
+
+    document.getElementById('income-total').textContent = fmt(inc) + ' ' + currency;
+    document.getElementById('savings-total').textContent = fmt(sav) + ' ' + currency;
+    document.getElementById('fixed-total').textContent = fmt(fix) + ' ' + currency;
+    document.getElementById('result-num').textContent = fmt(Math.abs(free)) + ' ' + currency;
+
+    const pct = inc > 0 ? Math.round((sav / inc) * 100) : 0;
+    document.getElementById('savings-pct').textContent = inc > 0 ? pct + '% of income' : '';
+
+    const rz = document.getElementById('result-zone');
+    document.getElementById('result-label').textContent = free < 0 ? 'Over budget by' : 'Free to spend this month';
+    rz.className = 'result-zone ' + (free < 0 ? 'result-negative' : 'result-positive');
+
+    if (inc > 0) {
+      document.getElementById('bar-savings').style.width = Math.min(100, (sav / inc) * 100) + '%';
+      document.getElementById('bar-fixed').style.width = Math.min(100, (fix / inc) * 100) + '%';
+      document.getElementById('bar-free').style.width = Math.max(0, Math.min(100, (free / inc) * 100)) + '%';
+    } else {
+      ['bar-savings','bar-fixed','bar-free'].forEach(id => document.getElementById(id).style.width = '0%');
+    }
+  }
+
+  function changeMonth(dir) {
+    curDate.setMonth(curDate.getMonth() + dir);
+    document.getElementById('month-label').textContent = MONTHS[curDate.getMonth()] + ' ' + curDate.getFullYear();
+  }
+
+  function toggleCurrency() {
+    const idx = CURRENCIES.indexOf(currency);
+    currency = CURRENCIES[(idx + 1) % CURRENCIES.length];
+    document.getElementById('cur-btn').textContent = currency;
+    recalc();
+  }
+
+  renderZone('income', 'income-inputs');
+  renderZone('savings', 'savings-inputs');
+  renderZone('fixed', 'fixed-inputs');
+  recalc();
+</script>
+</body>
+</html>
