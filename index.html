@@ -31,8 +31,7 @@
     }
     body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,16px); }
 
-    /* sync bar */
-    .sync-bar { display:flex; align-items:center; justify-content:center; gap:6px; padding:5px 12px; font-size:11px; font-weight:500; transition: background 0.3s; }
+    .sync-bar { display:flex; align-items:center; justify-content:center; gap:6px; padding:5px 12px; font-size:11px; font-weight:500; transition:background 0.3s; }
     .sync-saving { background:var(--amber-bg); color:var(--amber-text); }
     .sync-saved  { background:var(--green-bg);  color:var(--green-text); }
     .sync-error  { background:var(--red-bg);    color:var(--red-text); }
@@ -72,6 +71,7 @@
     .add-btn { width:100%; padding:8px; font-size:12px; color:var(--text3); background:none; border:none; border-top:1px solid var(--border2); cursor:pointer; }
     .add-btn:hover { background:var(--surface2); }
 
+    /* month page */
     .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
     .mnav { display:flex; align-items:center; gap:8px; }
     .mbtn { background:var(--surface); border:1px solid var(--border); border-radius:8px; width:30px; height:30px; font-size:18px; cursor:pointer; color:var(--text2); display:flex; align-items:center; justify-content:center; }
@@ -101,40 +101,78 @@
     .bi-lbl { font-size:10px; color:var(--text3); margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em; }
     .bi-wrap input { width:100%; }
 
-    .plan-res { border-radius:12px; padding:14px 16px; margin-bottom:10px; }
-    .plan-pos { background:var(--green-bg); } .plan-neg { background:var(--red-bg); }
-    .plbl { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
-    .plan-pos .plbl { color:var(--green-text); } .plan-neg .plbl { color:var(--red-text); }
-    .pnum { font-size:36px; font-weight:700; margin-top:4px; }
-    .plan-pos .pnum { color:var(--green); } .plan-neg .pnum { color:var(--red); }
-    .psub { font-size:12px; margin-top:6px; opacity:.8; }
-    .plan-pos .psub { color:var(--green-text); } .plan-neg .psub { color:var(--red-text); }
+    /* forecast badge on open month */
+    .forecast-strip { background:var(--blue-bg); border-radius:10px; padding:10px 14px; margin-bottom:10px; display:flex; align-items:center; gap:10px; }
+    .forecast-days { font-size:28px; font-weight:700; color:var(--blue); min-width:36px; }
+    .forecast-mid { flex:1; }
+    .forecast-label { font-size:10px; color:var(--blue-text); text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px; }
+    .forecast-sub { font-size:12px; color:var(--blue-text); opacity:.8; }
+    .forecast-per-day { text-align:right; }
+    .forecast-per-day-num { font-size:18px; font-weight:700; color:var(--blue); }
+    .forecast-per-day-lbl { font-size:10px; color:var(--blue-text); opacity:.8; }
 
-    .slrow { display:flex; align-items:center; gap:10px; padding:8px 14px; border-bottom:1px solid var(--border2); }
-    .slrow:last-child { border-bottom:none; }
-    .sllbl { font-size:13px; color:var(--text2); flex:1; }
-    .slval { font-size:13px; font-weight:500; min-width:55px; text-align:right; }
-    input[type=range] { flex:1; accent-color:var(--blue); }
+    /* plan page */
+    .plan-hero { border-radius:14px; padding:20px 18px 16px; margin-bottom:12px; }
+    .plan-pos { background:var(--green-bg); } .plan-neg { background:var(--red-bg); }
+    .plan-date-row { display:flex; align-items:baseline; gap:8px; margin-bottom:8px; }
+    .plan-days-big { font-size:48px; font-weight:700; line-height:1; }
+    .plan-pos .plan-days-big { color:var(--green); }
+    .plan-neg .plan-days-big { color:var(--red); }
+    .plan-days-lbl { font-size:13px; }
+    .plan-pos .plan-days-lbl { color:var(--green-text); }
+    .plan-neg .plan-days-lbl { color:var(--red-text); }
+    .plan-free-lbl { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; margin-bottom:2px; }
+    .plan-pos .plan-free-lbl { color:var(--green-text); }
+    .plan-neg .plan-free-lbl { color:var(--red-text); }
+    .plan-free-num { font-size:32px; font-weight:700; }
+    .plan-pos .plan-free-num { color:var(--green); }
+    .plan-neg .plan-free-num { color:var(--red); }
+    .plan-per-day { font-size:14px; margin-top:6px; font-weight:500; }
+    .plan-pos .plan-per-day { color:var(--green-text); }
+    .plan-neg .plan-per-day { color:var(--red-text); }
+
+    .forecast-input-row { display:flex; align-items:flex-start; gap:8px; padding:10px 14px; border-bottom:1px solid var(--border2); }
+    .forecast-input-row:last-child { border-bottom:none; }
+    .fi-label { font-size:13px; color:var(--text2); flex:1; padding-top:7px; }
+    .fi-right { display:flex; flex-direction:column; gap:4px; align-items:flex-end; }
+    .fi-right input[type=number] { width:110px; text-align:right; }
+    .fi-note { width:200px; font-size:11px; font-style:italic; }
+
+    .plan-breakdown { background:var(--surface); border:1px solid var(--border2); border-radius:12px; margin-bottom:10px; overflow:hidden; }
+    .pb-row { display:flex; padding:8px 14px; border-bottom:1px solid var(--border2); }
+    .pb-row:last-child { border-bottom:none; }
+    .pb-lbl { flex:1; font-size:13px; color:var(--text2); }
+    .pb-val { font-size:13px; font-weight:500; }
 
     .sec-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text3); margin:16px 0 8px; }
 
+    /* history page */
     .hm { background:var(--surface); border:1px solid var(--border2); border-radius:12px; margin-bottom:8px; overflow:hidden; }
     .hm-hdr { display:flex; align-items:center; padding:11px 14px; gap:8px; cursor:pointer; }
     .hm-name { font-size:14px; font-weight:500; flex:1; }
     .hbadge { font-size:10px; padding:2px 7px; border-radius:8px; font-weight:600; }
-    .hnet { font-size:14px; font-weight:600; }
+    .hnet { font-size:13px; font-weight:600; }
+    .hend { font-size:12px; color:var(--text3); }
     .hm-body { border-top:1px solid var(--border2); padding:10px 14px; display:none; }
     .hrow { display:flex; justify-content:space-between; font-size:13px; padding:3px 0; }
     .hrow span:first-child { color:var(--text2); }
     .hrow span:last-child { font-weight:500; }
     .goto-btn { margin-top:8px; font-size:12px; padding:5px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); cursor:pointer; color:var(--text2); }
 
+    /* mini bar chart in history */
+    .bal-chart { padding:14px 14px 6px; border-top:1px solid var(--border2); }
+    .bal-chart-title { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.04em; margin-bottom:8px; }
+    .bal-chart-bars { display:flex; align-items:flex-end; gap:3px; height:48px; }
+    .bal-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; }
+    .bal-bar { width:100%; border-radius:3px 3px 0 0; min-height:2px; transition:height 0.3s; }
+    .bal-bar-lbl { font-size:9px; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; text-align:center; }
+    .bal-bar-val { font-size:9px; color:var(--text2); font-weight:500; }
+
     .loading { text-align:center; padding:40px 16px; color:var(--text3); font-size:14px; }
   </style>
 </head>
 <body>
 
-<!-- Sync status bar -->
 <div class="sync-bar sync-saved" id="sync-bar">
   <div class="sync-dot"></div>
   <span id="sync-txt">connected</span>
@@ -146,7 +184,7 @@
   <button class="nav-tab" onclick="showPage('history')">History</button>
 </nav>
 
-<!-- THIS MONTH -->
+<!-- ── THIS MONTH ── -->
 <div class="page active" id="page-month">
   <div class="topbar">
     <div class="mnav">
@@ -156,11 +194,26 @@
     </div>
     <button class="spill" id="s-pill" onclick="toggleStatus()"></button>
   </div>
+
+  <!-- forecast strip — only shown on open months -->
+  <div class="forecast-strip" id="forecast-strip" style="display:none">
+    <div class="forecast-days" id="fc-days">0</div>
+    <div class="forecast-mid">
+      <div class="forecast-label">days left</div>
+      <div class="forecast-sub" id="fc-date"></div>
+    </div>
+    <div class="forecast-per-day">
+      <div class="forecast-per-day-num" id="fc-per-day">—</div>
+      <div class="forecast-per-day-lbl">K per day</div>
+    </div>
+  </div>
+
   <div class="bstrip">
     <div class="bcard"><div class="blbl">Opening</div><div class="bval" id="d-start">&#8212;</div></div>
     <div class="bcard"><div class="blbl">Net</div><div class="bval" id="d-net">&#8212;</div></div>
     <div class="bcard"><div class="blbl">Closing</div><div class="bval" id="d-end">&#8212;</div></div>
   </div>
+
   <div class="section">
     <div class="sec-hdr" onclick="toggleSec('b-milestone')">
       <div class="dot" style="background:var(--text3)"></div>
@@ -173,6 +226,7 @@
       </div>
     </div>
   </div>
+
   <div class="section">
     <div class="sec-hdr" onclick="toggleSec('b-income')">
       <div class="dot" style="background:var(--green)"></div>
@@ -185,6 +239,7 @@
       <button class="add-btn" id="add-income" onclick="addLine('income')">+ add income</button>
     </div>
   </div>
+
   <div class="section">
     <div class="sec-hdr" onclick="toggleSec('b-exp')">
       <div class="dot" style="background:var(--amber)"></div>
@@ -197,6 +252,8 @@
       <button class="add-btn" id="add-exp" onclick="addLine('exp')">+ add expense</button>
     </div>
   </div>
+
+  <!-- reconciliation — closing = opening + net, no manual closing input on open months -->
   <div class="section">
     <div class="sec-hdr" onclick="toggleSec('b-bal')">
       <div class="dot" style="background:var(--blue)"></div>
@@ -204,18 +261,18 @@
       <span class="chev" id="c-b-bal">&#9662;</span>
     </div>
     <div class="sec-body" id="b-bal" style="display:none">
-      <div class="bal-inputs">
+      <div class="bal-inputs" id="bal-inputs-wrap">
         <div class="bi-wrap">
           <div class="bi-lbl">Opening (K UAH)</div>
           <input type="number" step="0.1" id="in-start" placeholder="0.0" oninput="saveF('startBal',this.value);recalc()" />
         </div>
-        <div class="bi-wrap">
+        <div class="bi-wrap" id="closing-input-wrap">
           <div class="bi-lbl">Closing (K UAH)</div>
-          <input type="number" step="0.1" id="in-end" placeholder="0.0" oninput="saveF('endBal',this.value);recalc()" />
+          <input type="number" step="0.1" id="in-end" placeholder="auto / confirm" oninput="saveF('endBal',this.value);recalc()" />
         </div>
       </div>
       <div class="urow">
-        <span class="ulbl">Unexplained<br><span style="font-size:10px">closing &#8722; opening &#8722; income + expenses</span></span>
+        <span class="ulbl" id="u-lbl">Unexplained<br><span style="font-size:10px">closing &#8722; opening &#8722; income + expenses</span></span>
         <span class="uval uok" id="u-val">&#8212;</span>
       </div>
       <div class="bwrap">
@@ -229,54 +286,68 @@
   </div>
 </div>
 
-<!-- CAN I SPEND? -->
+<!-- ── CAN I SPEND? ── -->
 <div class="page" id="page-plan">
-  <div class="plan-res plan-pos" id="plan-res">
-    <div class="plbl">Free to spend</div>
-    <div class="pnum" id="p-num">&#8212;</div>
-    <div class="psub" id="p-sub"></div>
+
+  <!-- big hero card -->
+  <div class="plan-hero plan-pos" id="plan-hero">
+    <div class="plan-date-row">
+      <span class="plan-days-big" id="ph-days">0</span>
+      <span class="plan-days-lbl" id="ph-days-lbl">days left in month</span>
+    </div>
+    <div class="plan-free-lbl">Free to spend</div>
+    <div class="plan-free-num" id="ph-free">— K</div>
+    <div class="plan-per-day" id="ph-per-day"></div>
   </div>
-  <div class="sec-label">Adjust</div>
+
+  <div class="sec-label">Forecast till end of month</div>
   <div class="section">
-    <div class="slrow">
-      <span class="sllbl">Days left in month</span>
-      <input type="range" id="sl-days" min="1" max="31" step="1" oninput="updatePlan()" />
-      <span class="slval" id="sl-days-v">15d</span>
+    <div class="forecast-input-row">
+      <span class="fi-label">Expected income still coming</span>
+      <div class="fi-right">
+        <input type="number" step="0.1" placeholder="0.0 K" id="fc-inc-in" oninput="saveF('fcInc',this.value);updatePlan()" />
+        <input type="text" class="fi-note inote" placeholder="note for fiancée…" id="fc-inc-note" oninput="saveF('fcIncNote',this.value)" />
+      </div>
     </div>
-    <div class="slrow">
-      <span class="sllbl">Expected extra income</span>
-      <input type="range" id="sl-extra" min="0" max="50" step="0.5" oninput="updatePlan()" />
-      <span class="slval" id="sl-extra-v">0K</span>
-    </div>
-    <div class="slrow">
-      <span class="sllbl">Expected extra cost</span>
-      <input type="range" id="sl-cost" min="0" max="50" step="0.5" oninput="updatePlan()" />
-      <span class="slval" id="sl-cost-v">0K</span>
+    <div class="forecast-input-row">
+      <span class="fi-label">Expected expenses still coming</span>
+      <div class="fi-right">
+        <input type="number" step="0.1" placeholder="0.0 K" id="fc-exp-in" oninput="saveF('fcExp',this.value);updatePlan()" />
+        <input type="text" class="fi-note inote" placeholder="note for fiancée…" id="fc-exp-note" oninput="saveF('fcExpNote',this.value)" />
+      </div>
     </div>
   </div>
+
   <div class="sec-label">Breakdown</div>
-  <div class="section">
-    <div class="line-row"><span class="lname">Opening balance</span><span class="lval" id="p-open">&#8212;</span></div>
-    <div class="line-row"><span class="lname">Income so far</span><span class="lval" id="p-inc">&#8212;</span></div>
-    <div class="line-row"><span class="lname">Expenses so far</span><span class="lval" id="p-exp">&#8212;</span></div>
-    <div class="line-row" style="border-top:1px solid var(--border2)">
-      <span class="lname" style="font-weight:500">Available now</span>
-      <span class="lval" id="p-avail" style="font-weight:600">&#8212;</span>
+  <div class="plan-breakdown">
+    <div class="pb-row"><span class="pb-lbl">Opening balance</span><span class="pb-val" id="pb-open">—</span></div>
+    <div class="pb-row"><span class="pb-lbl">Income so far</span><span class="pb-val" id="pb-inc">—</span></div>
+    <div class="pb-row"><span class="pb-lbl">Expenses so far</span><span class="pb-val" id="pb-exp">—</span></div>
+    <div class="pb-row"><span class="pb-lbl">+ Expected income</span><span class="pb-val" id="pb-finc" style="color:var(--green)">+0</span></div>
+    <div class="pb-row"><span class="pb-lbl">− Expected expenses</span><span class="pb-val" id="pb-fexp" style="color:var(--amber)">−0</span></div>
+    <div class="pb-row" style="border-top:1px solid var(--border2)">
+      <span class="pb-lbl" style="font-weight:500">Free to spend</span>
+      <span class="pb-val" id="pb-free" style="font-weight:600">—</span>
     </div>
   </div>
 </div>
 
-<!-- HISTORY -->
+<!-- ── HISTORY ── -->
 <div class="page" id="page-history">
+  <!-- mini balance chart -->
+  <div class="bal-chart" id="bal-chart-wrap" style="display:none">
+    <div class="bal-chart-title">Closing balance over time (K UAH)</div>
+    <div class="bal-chart-bars" id="bal-chart-bars"></div>
+  </div>
   <div class="sec-label">All months</div>
   <div id="hist-list"><div class="loading">Loading&#8230;</div></div>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ── FIREBASE CONFIG ──
 const firebaseConfig = {
   apiKey: "AIzaSyC0JnRMnu0Vt_2Th4qXcvUUEo87cnuoTfQ",
   authDomain: "finance-app-f3ac3.firebaseapp.com",
@@ -285,11 +356,10 @@ const firebaseConfig = {
   messagingSenderId: "221322193594",
   appId: "1:221322193594:web:12f1ffe0932c662ac8b083"
 };
-
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
-// ── SEED DATA (uploaded once if Firestore is empty) ──
+// ── SEED ──
 const SEED = {
   '2025-01':{closed:true,milestone:'',startBal:40.05,endBal:-31.92,income:[{n:'Kernel',v:12.61,note:''},{n:'Аналітика',v:8.27,note:''}],exp:[{n:'Flat',v:7.5,note:''},{n:'Noted',v:33,note:''},{n:'Food',v:28,note:''}]},
   '2025-02':{closed:true,milestone:'New Salary',startBal:-31.92,endBal:-10.99,income:[{n:'Kernel',v:60,note:'new salary'}],exp:[{n:'Flat',v:7.5,note:''},{n:'Noted',v:20,note:''},{n:'Food',v:17,note:''}]},
@@ -308,262 +378,310 @@ const SEED = {
   '2026-03':{closed:false,milestone:'Side Project',startBal:null,endBal:null,income:[{n:'Kernel',v:76.3,note:''},{n:'Аналітика',v:40,note:''}],exp:[{n:'Flat',v:23.5,note:''},{n:'Debt',v:1.68,note:''},{n:'Noted',v:8.6,note:''},{n:'Auto',v:1.5,note:''}]},
 };
 
-// ── STATE ──
 const MS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 let curKey = '2026-03';
-let cache  = {};         // local mirror of Firestore docs
+let cache  = {};
 let saveTimer = null;
-
-// ── SYNC UI ──
-function syncStatus(state, msg) {
-  const bar = document.getElementById('sync-bar');
-  const txt = document.getElementById('sync-txt');
-  bar.className = 'sync-bar sync-' + state;
-  txt.textContent = msg;
-}
-
-// ── FIRESTORE HELPERS ──
-function docRef(key) { return doc(db, 'months', key); }
-
-async function seedFirestore() {
-  // Only seeds if Firestore is completely empty
-  const snap = await getDocs(collection(db, 'months'));
-  if (!snap.empty) return;
-  syncStatus('saving', 'uploading your history…');
-  for (const [key, data] of Object.entries(SEED)) {
-    await setDoc(docRef(key), data);
-  }
-  syncStatus('saved', 'history uploaded');
-}
-
-async function loadMonth(key) {
-  if (cache[key]) return cache[key];
-  const snap = await getDoc(docRef(key));
-  if (snap.exists()) {
-    cache[key] = snap.data();
-  } else {
-    // new blank month — carry opening from previous closing
-    const prev = cache[prevKey(key)];
-    cache[key] = {
-      closed: false, milestone: '',
-      startBal: prev ? (prev.endBal ?? null) : null,
-      endBal: null,
-      income: [{n:'Kernel',v:'',note:''}],
-      exp:    [{n:'Flat',v:'',note:''},{n:'Food',v:'',note:''}]
-    };
-  }
-  return cache[key];
-}
-
-function scheduleSave(key) {
-  clearTimeout(saveTimer);
-  syncStatus('saving', 'saving…');
-  saveTimer = setTimeout(async () => {
-    try {
-      await setDoc(docRef(key), cache[key]);
-      syncStatus('saved', 'saved');
-    } catch(e) {
-      syncStatus('error', 'save failed — check connection');
-    }
-  }, 800); // debounce 800ms so we don't write on every keystroke
-}
-
-// Live listener for current month — updates UI if fiancée edits
 let unsubscribe = null;
-function listenMonth(key) {
-  if (unsubscribe) unsubscribe();
-  unsubscribe = onSnapshot(docRef(key), (snap) => {
-    if (!snap.exists()) return;
-    const data = snap.data();
-    // Only update if the change came from the other device
-    // (compare serialised to avoid overwriting mid-type)
-    const current = JSON.stringify(cache[key]);
-    const incoming = JSON.stringify(data);
-    if (current !== incoming) {
-      cache[key] = data;
-      renderM();
-    }
-  });
-}
 
-// ── KEY HELPERS ──
-function keyOf(d)  { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
-function dateOf(k) { const[y,m]=k.split('-').map(Number); return new Date(y,m-1); }
+function syncStatus(s,m){ document.getElementById('sync-bar').className='sync-bar sync-'+s; document.getElementById('sync-txt').textContent=m; }
+function docRef(k){ return doc(db,'months',k); }
+function keyOf(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function dateOf(k){ const[y,m]=k.split('-').map(Number); return new Date(y,m-1); }
 function labelOf(k){ const d=dateOf(k); return MS[d.getMonth()]+' '+d.getFullYear(); }
 function prevKey(k){ const[y,m]=k.split('-').map(Number); return m===1?(y-1)+'-12':y+'-'+String(m-1).padStart(2,'0'); }
 function nextKey(k){ const[y,m]=k.split('-').map(Number); return m===12?(y+1)+'-01':y+'-'+String(m+1).padStart(2,'0'); }
-function esc(s)    { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function daysLeftInMonth(){ const n=new Date(); return new Date(n.getFullYear(),n.getMonth()+1,0).getDate()-n.getDate(); }
+function isCurrentMonth(k){ const n=new Date(); return k===keyOf(n); }
+
+async function seedFirestore(){
+  const snap=await getDocs(collection(db,'months'));
+  if(!snap.empty) return;
+  syncStatus('saving','uploading history…');
+  for(const[k,d] of Object.entries(SEED)) await setDoc(docRef(k),d);
+}
+
+async function loadMonth(k){
+  if(cache[k]) return cache[k];
+  const snap=await getDoc(docRef(k));
+  if(snap.exists()){ cache[k]=snap.data(); }
+  else{
+    const p=cache[prevKey(k)];
+    cache[k]={ closed:false, milestone:'', startBal:p?(p.endBal??null):null, endBal:null,
+      fcInc:'', fcIncNote:'', fcExp:'', fcExpNote:'',
+      income:[{n:'Kernel',v:'',note:''}], exp:[{n:'Flat',v:'',note:''},{n:'Food',v:'',note:''}] };
+  }
+  return cache[k];
+}
+
+function scheduleSave(k){
+  clearTimeout(saveTimer);
+  syncStatus('saving','saving…');
+  saveTimer=setTimeout(async()=>{
+    try{ await setDoc(docRef(k),cache[k]); syncStatus('saved','saved'); }
+    catch(e){ syncStatus('error','save failed'); }
+  },800);
+}
+
+function listenMonth(k){
+  if(unsubscribe) unsubscribe();
+  unsubscribe=onSnapshot(docRef(k),(snap)=>{
+    if(!snap.exists()) return;
+    const d=snap.data();
+    if(JSON.stringify(cache[k])!==JSON.stringify(d)){ cache[k]=d; renderM(); }
+  });
+}
 
 // ── RENDER MONTH ──
-function renderM() {
-  const data = cache[curKey];
-  if (!data) return;
-  const d = dateOf(curKey);
-  document.getElementById('m-lbl').textContent = MS[d.getMonth()]+' '+d.getFullYear();
-  const pill = document.getElementById('s-pill');
-  pill.textContent = data.closed ? 'closed' : 'open';
-  pill.className   = 'spill '+(data.closed ? 'spill-closed' : 'spill-open');
-  document.getElementById('milestone-in').value = data.milestone || '';
-  document.getElementById('in-start').value = data.startBal ?? '';
-  document.getElementById('in-end').value   = data.endBal   ?? '';
-  const lk = data.closed;
-  document.getElementById('in-start').disabled = lk;
-  document.getElementById('in-end').disabled   = lk;
-  document.getElementById('add-income').style.display = lk ? 'none' : 'block';
-  document.getElementById('add-exp').style.display    = lk ? 'none' : 'block';
+function renderM(){
+  const data=cache[curKey]; if(!data) return;
+  const d=dateOf(curKey);
+  document.getElementById('m-lbl').textContent=MS[d.getMonth()]+' '+d.getFullYear();
+  const pill=document.getElementById('s-pill');
+  pill.textContent=data.closed?'closed':'open';
+  pill.className='spill '+(data.closed?'spill-closed':'spill-open');
+  document.getElementById('milestone-in').value=data.milestone||'';
+
+  // opening = always from prev month closing (read-only display unless no prev)
+  const prevData=cache[prevKey(curKey)];
+  const autoStart = prevData ? (prevData.endBal??null) : null;
+  // if startBal not set yet and we have autoStart, apply it silently
+  if(data.startBal===null && autoStart!==null){
+    data.startBal=autoStart;
+    scheduleSave(curKey);
+  }
+  document.getElementById('in-start').value=data.startBal??'';
+  document.getElementById('in-start').disabled=true; // always locked — comes from prev month
+  document.getElementById('in-end').value=data.endBal??'';
+  document.getElementById('in-end').disabled=data.closed;
+
+  const lk=data.closed;
+  document.getElementById('add-income').style.display=lk?'none':'block';
+  document.getElementById('add-exp').style.display=lk?'none':'block';
+
+  // forecast strip — only on open current month
+  const fcStrip=document.getElementById('forecast-strip');
+  if(!data.closed && isCurrentMonth(curKey)){
+    fcStrip.style.display='flex';
+    const dl=daysLeftInMonth();
+    document.getElementById('fc-days').textContent=dl;
+    const n=new Date();
+    document.getElementById('fc-date').textContent=MS[n.getMonth()]+' '+n.getDate();
+    recalcForecastStrip();
+  } else { fcStrip.style.display='none'; }
+
   renderLines('income');
   renderLines('exp');
   recalc();
 }
 
-function renderLines(zone) {
-  const data = cache[curKey];
-  if (!data) return;
-  const rows = zone === 'income' ? data.income : data.exp;
-  const el   = document.getElementById(zone+'-lines');
-  const lk   = data.closed;
-  el.innerHTML = '';
-  rows.forEach((row, i) => {
-    const w = document.createElement('div');
-    w.innerHTML = `
-      <div class="line-row">
-        <input class="iname" type="text" value="${esc(row.n)}" placeholder="Name" ${lk?'disabled':''}
-          oninput="window._upLine('${zone}',${i},'n',this.value)" />
-        <input class="ival" type="number" step="0.1" placeholder="0.0"
-          value="${row.v!==''&&row.v!==null?Math.abs(Number(row.v)):''}" ${lk?'disabled':''}
-          oninput="window._upLine('${zone}',${i},'v',this.value);recalc()" />
-      </div>
-      <div class="note-wrap">
-        <input class="inote" type="text" value="${esc(row.note||'')}" placeholder="note…" ${lk?'disabled':''}
-          oninput="window._upLine('${zone}',${i},'note',this.value)" />
-      </div>`;
+function recalcForecastStrip(){
+  const data=cache[curKey]; if(!data) return;
+  const inc=data.income.reduce((a,r)=>a+(parseFloat(r.v)||0),0);
+  const exp=data.exp.reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0);
+  const start=data.startBal??0;
+  const fcInc=parseFloat(data.fcInc)||0;
+  const fcExp=parseFloat(data.fcExp)||0;
+  const free=start+inc-exp+fcInc-fcExp;
+  const dl=daysLeftInMonth();
+  const perDay=dl>0?(free/dl):0;
+  document.getElementById('fc-per-day').textContent=perDay.toFixed(1);
+}
+
+function renderLines(zone){
+  const data=cache[curKey]; if(!data) return;
+  const rows=zone==='income'?data.income:data.exp;
+  const el=document.getElementById(zone+'-lines');
+  const lk=data.closed;
+  el.innerHTML='';
+  rows.forEach((row,i)=>{
+    const w=document.createElement('div');
+    w.innerHTML=`<div class="line-row">
+      <input class="iname" type="text" value="${esc(row.n)}" placeholder="Name" ${lk?'disabled':''}
+        oninput="window._upLine('${zone}',${i},'n',this.value)"/>
+      <input class="ival" type="number" step="0.1" placeholder="0.0"
+        value="${row.v!==''&&row.v!==null?Math.abs(Number(row.v)):''}" ${lk?'disabled':''}
+        oninput="window._upLine('${zone}',${i},'v',this.value);recalc()"/>
+    </div>
+    <div class="note-wrap"><input class="inote" type="text" value="${esc(row.note||'')}"
+      placeholder="note…" ${lk?'disabled':''} oninput="window._upLine('${zone}',${i},'note',this.value)"/></div>`;
     el.appendChild(w);
   });
 }
 
-// ── DATA MUTATIONS ──
-window._upLine = function(zone, i, f, v) {
-  const rows = zone==='income' ? cache[curKey].income : cache[curKey].exp;
-  rows[i][f] = v;
-  scheduleSave(curKey);
+// ── RECALC ──
+window.recalc = function(){
+  const data=cache[curKey]; if(!data) return;
+  const inc=data.income.reduce((a,r)=>a+(parseFloat(r.v)||0),0);
+  const exp=data.exp.reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0);
+  const net=inc-exp;
+  document.getElementById('t-income').textContent=inc.toFixed(1);
+  document.getElementById('t-exp').textContent=exp.toFixed(1);
+
+  const start=data.startBal;
+  // on open months: closing = opening + net (forecast). on closed: actual value
+  const computedEnd = (start!==null&&start!==undefined) ? start+net : null;
+  const displayEnd  = data.closed ? data.endBal : computedEnd;
+
+  document.getElementById('d-start').textContent=start!==null&&start!==undefined?Math.abs(start).toFixed(1):'—';
+  document.getElementById('d-end').textContent=displayEnd!==null&&displayEnd!==undefined?displayEnd.toFixed(1):'—';
+  const ne=document.getElementById('d-net');
+  ne.textContent=(net>=0?'+':'')+net.toFixed(1);
+  ne.className='bval '+(net>=0?'vpos':'vneg');
+
+  // unexplained: only meaningful on closed months with real closing balance
+  const ue=document.getElementById('u-val');
+  const ul=document.getElementById('u-lbl');
+  if(data.closed && start!==null&&start!==undefined && data.endBal!==null&&data.endBal!==undefined){
+    const u=data.endBal-start-inc+exp;
+    ue.textContent=(u>=0?'+':'')+u.toFixed(1);
+    const a=Math.abs(u);
+    ue.className='uval '+(a<5?'uok':a<20?'uwarn':'ubad');
+    ul.innerHTML='Unexplained<br><span style="font-size:10px">closing &#8722; opening &#8722; income + expenses</span>';
+  } else if(!data.closed){
+    ue.textContent='open';
+    ue.className='uval uwarn';
+    ul.innerHTML='Unexplained<br><span style="font-size:10px">enter real closing to reconcile</span>';
+  } else { ue.textContent='—'; ue.className='uval'; }
+
+  const tot=inc+exp;
+  if(tot>0){
+    document.getElementById('b-inc').style.width=((inc/tot)*100)+'%';
+    document.getElementById('b-exb').style.width=((exp/tot)*100)+'%';
+  }
+  recalcForecastStrip();
+  updatePlan();
 };
 
-window.addLine = function(zone) {
-  const arr = zone==='income' ? cache[curKey].income : cache[curKey].exp;
-  arr.push({n: zone==='income'?'Income':'Expense', v:'', note:''});
-  renderLines(zone); recalc();
+// ── MUTATIONS ──
+window._upLine=function(zone,i,f,v){
+  const rows=zone==='income'?cache[curKey].income:cache[curKey].exp;
+  rows[i][f]=v; scheduleSave(curKey);
+};
+window.addLine=function(zone){
+  const arr=zone==='income'?cache[curKey].income:cache[curKey].exp;
+  arr.push({n:zone==='income'?'Income':'Expense',v:'',note:''});
+  renderLines(zone); recalc(); scheduleSave(curKey);
+};
+window.saveF=function(f,v){
+  const d=cache[curKey];
+  d[f]=(f==='startBal'||f==='endBal')?(v===''?null:parseFloat(v)):v;
   scheduleSave(curKey);
 };
-
-window.saveF = function(f, v) {
-  const d = cache[curKey];
-  d[f] = (f==='startBal'||f==='endBal') ? (v===''?null:parseFloat(v)) : v;
-  scheduleSave(curKey);
-};
-
-window.toggleStatus = function() {
-  const data = cache[curKey];
-  if (!data.closed && data.endBal !== null) {
-    const nk = nextKey(curKey);
-    if (!cache[nk]) {
-      cache[nk] = { closed:false, milestone:'', startBal:data.endBal, endBal:null,
-        income:[{n:'Kernel',v:'',note:''}], exp:[{n:'Flat',v:'',note:''},{n:'Food',v:'',note:''}] };
-    } else if (cache[nk].startBal === null) {
-      cache[nk].startBal = data.endBal;
+window.toggleStatus=function(){
+  const data=cache[curKey];
+  // compute endBal from opening+net if not set
+  if(!data.closed){
+    const inc=data.income.reduce((a,r)=>a+(parseFloat(r.v)||0),0);
+    const exp=data.exp.reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0);
+    if(data.endBal===null && data.startBal!==null){
+      data.endBal=parseFloat((data.startBal+inc-exp).toFixed(2));
+      document.getElementById('in-end').value=data.endBal;
     }
+    // propagate to next month
+    const nk=nextKey(curKey); const nd=getOrBlank(nk);
+    if(nd.startBal===null) nd.startBal=data.endBal;
     scheduleSave(nk);
   }
-  data.closed = !data.closed;
-  scheduleSave(curKey);
-  renderM();
+  data.closed=!data.closed; scheduleSave(curKey); renderM();
 };
+function getOrBlank(k){
+  if(!cache[k]) cache[k]={closed:false,milestone:'',startBal:null,endBal:null,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',income:[{n:'Kernel',v:'',note:''}],exp:[{n:'Flat',v:'',note:''},{n:'Food',v:'',note:''}]};
+  return cache[k];
+}
 
-// ── RECALC ──
-window.recalc = function() {
-  const data = cache[curKey];
-  if (!data) return;
-  const inc = data.income.reduce((a,r)=>a+(parseFloat(r.v)||0),0);
-  const exp = data.exp.reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0);
-  const net = inc - exp;
-  document.getElementById('t-income').textContent = inc.toFixed(1);
-  document.getElementById('t-exp').textContent    = exp.toFixed(1);
-  const start = data.startBal; const end = data.endBal;
-  document.getElementById('d-start').textContent = start!==null&&start!==undefined ? Math.abs(start).toFixed(1) : '—';
-  document.getElementById('d-end').textContent   = end!==null&&end!==undefined ? end.toFixed(1) : '—';
-  const ne = document.getElementById('d-net');
-  ne.textContent = (net>=0?'+':'')+net.toFixed(1);
-  ne.className = 'bval '+(net>=0?'vpos':'vneg');
-  const ue = document.getElementById('u-val');
-  if (start!==null&&start!==undefined&&end!==null&&end!==undefined) {
-    const u = end - start - inc + exp;
-    ue.textContent = (u>=0?'+':'')+u.toFixed(1);
-    const a = Math.abs(u);
-    ue.className = 'uval '+(a<5?'uok':a<20?'uwarn':'ubad');
-  } else { ue.textContent='—'; ue.className='uval'; }
-  const tot = inc+exp;
-  if (tot>0) {
-    document.getElementById('b-inc').style.width = ((inc/tot)*100)+'%';
-    document.getElementById('b-exb').style.width = ((exp/tot)*100)+'%';
-  }
-};
+// ── PLAN PAGE ──
+window.updatePlan=function(){
+  const data=cache[curKey]; if(!data) return;
+  const inc=data.income.reduce((a,r)=>a+(parseFloat(r.v)||0),0);
+  const exp=data.exp.reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0);
+  const start=data.startBal??0;
+  const fcInc=parseFloat(data.fcInc)||0;
+  const fcExp=parseFloat(data.fcExp)||0;
 
-// ── PLAN ──
-window.updatePlan = function() {
-  const data = cache[curKey];
-  if (!data) return;
-  const inc   = data.income.reduce((a,r)=>a+(parseFloat(r.v)||0),0);
-  const exp   = data.exp.reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0);
-  const start = data.startBal || 0;
-  const avail = start + inc - exp;
-  const days  = parseInt(document.getElementById('sl-days').value)||1;
-  const extra = parseFloat(document.getElementById('sl-extra').value)||0;
-  const cost  = parseFloat(document.getElementById('sl-cost').value)||0;
-  document.getElementById('sl-days-v').textContent  = days+'d';
-  document.getElementById('sl-extra-v').textContent = extra.toFixed(1)+'K';
-  document.getElementById('sl-cost-v').textContent  = cost.toFixed(1)+'K';
-  const free = avail + extra - cost;
-  const pr = document.getElementById('plan-res');
-  pr.className = 'plan-res '+(free>=0?'plan-pos':'plan-neg');
-  document.getElementById('p-num').textContent = Math.abs(free).toFixed(1)+' K';
-  document.getElementById('p-sub').textContent = free>=0
-    ? `${free.toFixed(1)}K UAH available`
+  // sync forecast inputs
+  document.getElementById('fc-inc-in').value=data.fcInc||'';
+  document.getElementById('fc-exp-in').value=data.fcExp||'';
+  document.getElementById('fc-inc-note').value=data.fcIncNote||'';
+  document.getElementById('fc-exp-note').value=data.fcExpNote||'';
+
+  const avail=start+inc-exp;
+  const free=avail+fcInc-fcExp;
+  const dl=daysLeftInMonth();
+  const perDay=dl>0?(free/dl):0;
+
+  const hero=document.getElementById('plan-hero');
+  hero.className='plan-hero '+(free>=0?'plan-pos':'plan-neg');
+  document.getElementById('ph-days').textContent=dl;
+  document.getElementById('ph-days-lbl').textContent='days left in '+MS[dateOf(curKey).getMonth()];
+  document.getElementById('ph-free').textContent=Math.abs(free).toFixed(1)+' K';
+  document.getElementById('ph-per-day').textContent=free>=0
+    ? `= ${perDay.toFixed(2)} K per day`
     : `${Math.abs(free).toFixed(1)}K over budget`;
-  document.getElementById('p-open').textContent = start.toFixed(1)+' K';
-  document.getElementById('p-inc').textContent  = '+'+inc.toFixed(1)+' K';
-  document.getElementById('p-exp').textContent  = '−'+exp.toFixed(1)+' K';
-  const ae = document.getElementById('p-avail');
-  ae.textContent = (avail>=0?'+':'')+avail.toFixed(1)+' K';
-  ae.style.color = avail>=0?'var(--green)':'var(--red)';
+
+  document.getElementById('pb-open').textContent=start.toFixed(1)+' K';
+  document.getElementById('pb-inc').textContent='+'+inc.toFixed(1)+' K';
+  document.getElementById('pb-exp').textContent='−'+exp.toFixed(1)+' K';
+  document.getElementById('pb-finc').textContent=fcInc>0?'+'+fcInc.toFixed(1)+' K':'+0';
+  document.getElementById('pb-fexp').textContent=fcExp>0?'−'+fcExp.toFixed(1)+' K':'−0';
+  const pf=document.getElementById('pb-free');
+  pf.textContent=(free>=0?'+':'')+free.toFixed(1)+' K';
+  pf.style.color=free>=0?'var(--green)':'var(--red)';
 };
 
 // ── HISTORY ──
-async function renderHist() {
-  const c = document.getElementById('hist-list');
-  c.innerHTML = '<div class="loading">Loading…</div>';
-  // Load all months from Firestore
-  const snap = await getDocs(collection(db, 'months'));
-  const all = {};
-  snap.forEach(d => { all[d.id] = d.data(); cache[d.id] = d.data(); });
-  const keys = Object.keys(all).sort().reverse();
-  c.innerHTML = '';
-  keys.forEach(k => {
-    const data = all[k];
-    const inc = (data.income||[]).reduce((a,r)=>a+(parseFloat(r.v)||0),0);
-    const exp = (data.exp||[]).reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0);
-    const net = inc - exp;
-    const div = document.createElement('div'); div.className='hm';
-    div.innerHTML = `
+async function renderHist(){
+  const c=document.getElementById('hist-list');
+  c.innerHTML='<div class="loading">Loading…</div>';
+  const snap=await getDocs(collection(db,'months'));
+  const all={};
+  snap.forEach(d=>{ all[d.id]=d.data(); cache[d.id]=d.data(); });
+  const keys=Object.keys(all).sort().reverse();
+  c.innerHTML='';
+
+  // build mini bar chart
+  const chartKeys=Object.keys(all).filter(k=>all[k].endBal!==null&&all[k].endBal!==undefined).sort();
+  if(chartKeys.length>1){
+    const wrap=document.getElementById('bal-chart-wrap');
+    wrap.style.display='block';
+    const bars=document.getElementById('bal-chart-bars');
+    bars.innerHTML='';
+    const vals=chartKeys.map(k=>all[k].endBal);
+    const mn=Math.min(...vals); const mx=Math.max(...vals);
+    const range=mx-mn||1;
+    chartKeys.slice(-12).forEach(k=>{ // show last 12 months
+      const v=all[k].endBal;
+      const h=Math.max(4,Math.round(((v-mn)/range)*44));
+      const col=v>=0?'var(--green)':'var(--red)';
+      const bw=document.createElement('div');
+      bw.className='bal-bar-wrap';
+      bw.innerHTML=`<div class="bal-bar-val">${v.toFixed(0)}</div>
+        <div class="bal-bar" style="height:${h}px;background:${col}"></div>
+        <div class="bal-bar-lbl">${MS[dateOf(k).getMonth()]}</div>`;
+      bars.appendChild(bw);
+    });
+  }
+
+  keys.forEach(k=>{
+    const data=all[k];
+    const inc=(data.income||[]).reduce((a,r)=>a+(parseFloat(r.v)||0),0);
+    const exp=(data.exp||[]).reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0);
+    const net=inc-exp;
+    const div=document.createElement('div'); div.className='hm';
+    div.innerHTML=`
       <div class="hm-hdr" onclick="toggleHist('hb-${k}')">
         <span class="hm-name">${labelOf(k)}</span>
         ${data.milestone?`<span style="font-size:11px;color:var(--text3)">${esc(data.milestone)}</span>`:''}
         <span class="hbadge" style="background:${data.closed?'var(--green-bg)':'var(--amber-bg)'};color:${data.closed?'var(--green-text)':'var(--amber-text)'}">${data.closed?'closed':'open'}</span>
         <span class="hnet" style="color:${net>=0?'var(--green)':'var(--red)'}">${net>=0?'+':''}${net.toFixed(1)}</span>
+        <span class="hend">${data.endBal!=null?data.endBal.toFixed(1)+'K':'—'}</span>
       </div>
       <div class="hm-body" id="hb-${k}">
         <div class="hrow"><span>Opening</span><span>${data.startBal!=null?data.startBal.toFixed(1)+'K':'—'}</span></div>
         <div class="hrow"><span>Income</span><span style="color:var(--green)">+${inc.toFixed(1)}K</span></div>
         <div class="hrow"><span>Expenses</span><span style="color:var(--amber)">−${exp.toFixed(1)}K</span></div>
-        <div class="hrow"><span>Closing</span><span>${data.endBal!=null?data.endBal.toFixed(1)+'K':'—'}</span></div>
+        <div class="hrow"><span>Closing balance</span><span style="font-weight:600">${data.endBal!=null?data.endBal.toFixed(1)+'K':'—'}</span></div>
         ${(data.income||[]).filter(r=>r.v).map(r=>`<div class="hrow"><span style="padding-left:12px">${esc(r.n)}</span><span>+${Math.abs(parseFloat(r.v)||0).toFixed(1)}</span></div>`).join('')}
         ${(data.exp||[]).filter(r=>r.v).map(r=>`<div class="hrow"><span style="padding-left:12px">${esc(r.n)}</span><span>−${Math.abs(parseFloat(r.v)||0).toFixed(1)}</span></div>`).join('')}
         <button class="goto-btn" onclick="goToMonth('${k}')">Open this month &#8594;</button>
@@ -572,52 +690,48 @@ async function renderHist() {
   });
 }
 
-window.toggleHist = function(id){ const e=document.getElementById(id); e.style.display=e.style.display==='block'?'none':'block'; };
-window.goToMonth  = function(k) { curKey=k; showPage('month'); };
+window.toggleHist=function(id){ const e=document.getElementById(id); e.style.display=e.style.display==='block'?'none':'block'; };
+window.goToMonth=function(k){ curKey=k; showPage('month'); };
 
-// ── UI HELPERS ──
-window.showPage = async function(n) {
+// ── UI ──
+window.showPage=async function(n){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+n).classList.add('active');
   [{month:0,plan:1,history:2}[n]].forEach(i=>document.querySelectorAll('.nav-tab')[i].classList.add('active'));
-  if (n==='history') await renderHist();
-  if (n==='plan') updatePlan();
+  if(n==='history') await renderHist();
+  if(n==='plan') updatePlan();
 };
-
-window.toggleSec = function(id) {
+window.toggleSec=function(id){
   const b=document.getElementById(id); const c=document.getElementById('c-'+id);
   const o=b.style.display!=='none';
   b.style.display=o?'none':'block';
   c.className='chev'+(o?'':' open');
 };
-
-window.changeMonth = async function(dir) {
+window.changeMonth=async function(dir){
   const d=dateOf(curKey); d.setMonth(d.getMonth()+dir);
   curKey=keyOf(d);
   syncStatus('saving','loading…');
   await loadMonth(curKey);
+  // also load prev month so opening balance auto-fills
+  await loadMonth(prevKey(curKey));
   listenMonth(curKey);
   renderM();
   syncStatus('saved','connected');
 };
 
 // ── BOOT ──
-(async () => {
-  syncStatus('saving', 'connecting…');
-  try {
+(async()=>{
+  syncStatus('saving','connecting…');
+  try{
     await seedFirestore();
+    await loadMonth(prevKey(curKey)); // load prev so opening can auto-fill
     await loadMonth(curKey);
     listenMonth(curKey);
-    // init sliders
-    const now=new Date();
-    const dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
-    document.getElementById('sl-days').value=dim-now.getDate();
-    document.getElementById('sl-days').max=dim;
     renderM();
     syncStatus('saved','connected');
-  } catch(e) {
-    syncStatus('error','connection failed — check internet');
+  }catch(e){
+    syncStatus('error','connection failed');
     console.error(e);
   }
 })();
