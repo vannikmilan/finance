@@ -497,6 +497,7 @@ let cache={};
 let balCache={};
 let saveTimer=null;
 let unsubscribe=null;
+let isSyncing=false; // prevents onSnapshot → renderM → save loop
 
 function syncStatus(s,m){document.getElementById('sync-bar').className='sync-bar sync-'+s;document.getElementById('sync-txt').textContent=m}
 function docRef(k){return doc(db,'months',k)}
@@ -547,15 +548,20 @@ function scheduleSave(k){
   // stamp updatedAt only for current month
   if(isCurrentMonth(k)) cache[k].updatedAt=Date.now();
   saveTimer=setTimeout(async()=>{
-    try{await setDoc(docRef(k),cache[k]);syncStatus('saved','saved');}
-    catch(e){syncStatus('error','save failed');}
+    try{
+      isSyncing=true;
+      await setDoc(docRef(k),cache[k]);
+      isSyncing=false;
+      syncStatus('saved','saved');
+    }
+    catch(e){isSyncing=false;syncStatus('error','save failed');}
   },800);
 }
 
 function listenMonth(k){
   if(unsubscribe)unsubscribe();
   unsubscribe=onSnapshot(docRef(k),(snap)=>{
-    if(!snap.exists())return;
+    if(!snap.exists()||isSyncing)return;
     const d=snap.data();
     if(JSON.stringify(cache[k])!==JSON.stringify(d)){cache[k]=d;renderM();}
   });
@@ -589,7 +595,11 @@ function renderM(){
   const monthBalEntries=Object.entries(balCache).filter(([k])=>k.startsWith(monthPrefix)||k===curKey);
   const latestBalEntry=monthBalEntries.sort(([a],[b])=>b.localeCompare(a))[0];
   const balTotal=latestBalEntry?(latestBalEntry[1].total??null):null;
-  if(balTotal!==null&&data.endBal!==balTotal){data.endBal=balTotal;scheduleSave(curKey);}
+  if(balTotal!==null){
+    const rounded=Math.round(balTotal*1000)/1000;
+    const current=data.endBal!==null&&data.endBal!==undefined?Math.round(data.endBal*1000)/1000:null;
+    if(current!==rounded){data.endBal=rounded;scheduleSave(curKey);}
+  }
   document.getElementById('in-end').value=data.endBal!=null&&!isNaN(data.endBal)?Number(data.endBal).toFixed(2):'';
   document.getElementById('in-end').disabled=true;
   document.getElementById('close-notice').style.display=(!data.closed&&balTotal===null)?'block':'none';
