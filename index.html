@@ -542,11 +542,10 @@ async function loadMonth(k){
   return cache[k];
 }
 
-function scheduleSave(k){
+function scheduleSave(k, userInitiated=false){
   clearTimeout(saveTimer);
   syncStatus('saving','saving…');
-  // stamp updatedAt only for current month
-  if(isCurrentMonth(k)) cache[k].updatedAt=Date.now();
+  if(userInitiated && isCurrentMonth(k)) cache[k].updatedAt=Date.now();
   saveTimer=setTimeout(async()=>{
     try{
       isSyncing=true;
@@ -568,6 +567,10 @@ function listenMonth(k){
 }
 
 // ── RENDER MONTH ──
+async function silentSave(k){
+  try{ await setDoc(docRef(k),cache[k]); } catch(e){}
+}
+
 function renderM(){
   const data=cache[curKey];if(!data)return;
   const d=dateOf(curKey);
@@ -586,11 +589,11 @@ function renderM(){
   // opening — always from prev month closing, locked
   const prevData=cache[prevKey(curKey)];
   const autoStart=prevData?(prevData.endBal??null):null;
-  if(data.startBal===null&&autoStart!==null){data.startBal=autoStart;scheduleSave(curKey);}
+  if(data.startBal===null&&autoStart!==null){data.startBal=autoStart;silentSave(curKey);}
   document.getElementById('in-start').value=data.startBal??'';
   document.getElementById('in-start').disabled=true;
 
-  // closing — always from balance page (most recent entry for this month), never manually entered
+  // closing — always from balance page, read-only
   const monthPrefix=curKey+'-';
   const monthBalEntries=Object.entries(balCache).filter(([k])=>k.startsWith(monthPrefix)||k===curKey);
   const latestBalEntry=monthBalEntries.sort(([a],[b])=>b.localeCompare(a))[0];
@@ -598,7 +601,7 @@ function renderM(){
   if(balTotal!==null){
     const rounded=Math.round(balTotal*1000)/1000;
     const current=data.endBal!==null&&data.endBal!==undefined?Math.round(data.endBal*1000)/1000:null;
-    if(current!==rounded){data.endBal=rounded;scheduleSave(curKey);}
+    if(current!==rounded){data.endBal=rounded;silentSave(curKey);}
   }
   document.getElementById('in-end').value=data.endBal!=null&&!isNaN(data.endBal)?Number(data.endBal).toFixed(2):'';
   document.getElementById('in-end').disabled=true;
@@ -675,7 +678,7 @@ function renderLines(zone){
 window._togglePlanned=function(i){
   const rows=cache[curKey].exp;
   rows[i].planned=!rows[i].planned;
-  renderLines('exp');recalc();scheduleSave(curKey);
+  renderLines('exp');recalc();scheduleSave(curKey,true);
 };
 
 window.recalc=function(){
@@ -748,24 +751,23 @@ window._upLine=function(zone,i,f,v){
   if(zone==='income')rows=cache[curKey].income;
   else if(zone==='savings')rows=cache[curKey].savings;
   else rows=cache[curKey].exp;
-  rows[i][f]=v;scheduleSave(curKey);
+  rows[i][f]=v;scheduleSave(curKey,true);
 };
 window.addLine=function(zone){
   let arr,dflt;
   if(zone==='income'){arr=cache[curKey].income;dflt={n:'Income',v:'',note:''};}
   else if(zone==='savings'){arr=cache[curKey].savings;dflt={n:'Savings goal',v:'',note:''};}
   else{arr=cache[curKey].exp;dflt={n:'Expense',v:'',note:'',planned:viewMode==='plan'};}
-  arr.push(dflt);renderLines(zone);recalc();scheduleSave(curKey);
+  arr.push(dflt);renderLines(zone);recalc();scheduleSave(curKey,true);
 };
 window.saveF=function(f,v){
   const d=cache[curKey];
   d[f]=(f==='startBal'||f==='endBal')?(v===''?null:parseFloat(v)):v;
-  scheduleSave(curKey);
+  scheduleSave(curKey,true);
 };
 window.toggleStatus=function(){
   const data=cache[curKey];
   if(!data.closed){
-    // endBal must come from balance page
     if(!data.endBal){
       document.getElementById('b-bal').style.display='block';
       document.getElementById('c-b-bal').className='chev open';
@@ -773,11 +775,10 @@ window.toggleStatus=function(){
       alert('Go to the Balance tab and save a balance entry for this month first.');
       return;
     }
-    // propagate closing → next month opening
     const nk=nextKey(curKey);const nd=getOrBlank(nk);
-    if(nd.startBal===null){nd.startBal=data.endBal;scheduleSave(nk);}
+    if(nd.startBal===null){nd.startBal=data.endBal;scheduleSave(nk,true);}
   }
-  data.closed=!data.closed;scheduleSave(curKey);renderM();
+  data.closed=!data.closed;scheduleSave(curKey,true);renderM();
 };
 function getOrBlank(k){
   if(!cache[k])cache[k]={closed:false,milestone:'',startBal:null,endBal:null,savings:[{n:'Emergency fund',v:'',note:''},{n:'Travel',v:'',note:''},{n:'Envelope',v:'',note:''}],fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',updatedAt:null,income:[{n:'Kernel',v:'',note:''}],exp:[{n:'Flat',v:'',note:''},{n:'Food',v:'',note:''}]};
