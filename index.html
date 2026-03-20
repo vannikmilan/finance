@@ -31,6 +31,13 @@
     }
     body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,16px); }
 
+    /* sync bar */
+    .sync-bar { display:flex; align-items:center; justify-content:center; gap:6px; padding:5px 12px; font-size:11px; font-weight:500; transition: background 0.3s; }
+    .sync-saving { background:var(--amber-bg); color:var(--amber-text); }
+    .sync-saved  { background:var(--green-bg);  color:var(--green-text); }
+    .sync-error  { background:var(--red-bg);    color:var(--red-text); }
+    .sync-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+
     .nav { display:flex; border-bottom:1px solid var(--border); background:var(--surface); position:sticky; top:0; z-index:10; }
     .nav-tab { flex:1; padding:12px 4px; font-size:12px; font-weight:500; text-align:center; color:var(--text3); background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; }
     .nav-tab.active { color:var(--text); border-bottom-color:var(--text); }
@@ -56,9 +63,8 @@
     input[type=text]:focus,input[type=number]:focus { border-color:var(--blue); }
     input.iname { flex:1; background:none; border:none; border-radius:0; padding:0; font-size:13px; color:var(--text2); }
     input.iname:focus { outline:none; color:var(--text); }
-    input.iname:disabled { color:var(--text2); opacity:0.7; }
+    input.iname:disabled,input.ival:disabled,input.inote:disabled { opacity:0.6; }
     input.ival { width:100px; text-align:right; }
-    input.ival:disabled { opacity:0.7; }
     input.inote { width:100%; background:none; border:none; border-radius:0; padding:0 0 0 4px; font-size:11px; color:var(--text3); font-style:italic; }
     input.inote:focus { outline:none; color:var(--text2); }
     .note-wrap { padding:2px 14px 7px; }
@@ -66,7 +72,6 @@
     .add-btn { width:100%; padding:8px; font-size:12px; color:var(--text3); background:none; border:none; border-top:1px solid var(--border2); cursor:pointer; }
     .add-btn:hover { background:var(--surface2); }
 
-    /* month page */
     .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
     .mnav { display:flex; align-items:center; gap:8px; }
     .mbtn { background:var(--surface); border:1px solid var(--border); border-radius:8px; width:30px; height:30px; font-size:18px; cursor:pointer; color:var(--text2); display:flex; align-items:center; justify-content:center; }
@@ -96,14 +101,13 @@
     .bi-lbl { font-size:10px; color:var(--text3); margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em; }
     .bi-wrap input { width:100%; }
 
-    /* plan page */
     .plan-res { border-radius:12px; padding:14px 16px; margin-bottom:10px; }
     .plan-pos { background:var(--green-bg); } .plan-neg { background:var(--red-bg); }
     .plbl { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
     .plan-pos .plbl { color:var(--green-text); } .plan-neg .plbl { color:var(--red-text); }
     .pnum { font-size:36px; font-weight:700; margin-top:4px; }
     .plan-pos .pnum { color:var(--green); } .plan-neg .pnum { color:var(--red); }
-    .psub { font-size:12px; margin-top:6px; opacity:.7; }
+    .psub { font-size:12px; margin-top:6px; opacity:.8; }
     .plan-pos .psub { color:var(--green-text); } .plan-neg .psub { color:var(--red-text); }
 
     .slrow { display:flex; align-items:center; gap:10px; padding:8px 14px; border-bottom:1px solid var(--border2); }
@@ -114,7 +118,6 @@
 
     .sec-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text3); margin:16px 0 8px; }
 
-    /* history page */
     .hm { background:var(--surface); border:1px solid var(--border2); border-radius:12px; margin-bottom:8px; overflow:hidden; }
     .hm-hdr { display:flex; align-items:center; padding:11px 14px; gap:8px; cursor:pointer; }
     .hm-name { font-size:14px; font-weight:500; flex:1; }
@@ -125,9 +128,17 @@
     .hrow span:first-child { color:var(--text2); }
     .hrow span:last-child { font-weight:500; }
     .goto-btn { margin-top:8px; font-size:12px; padding:5px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); cursor:pointer; color:var(--text2); }
+
+    .loading { text-align:center; padding:40px 16px; color:var(--text3); font-size:14px; }
   </style>
 </head>
 <body>
+
+<!-- Sync status bar -->
+<div class="sync-bar sync-saved" id="sync-bar">
+  <div class="sync-dot"></div>
+  <span id="sync-txt">connected</span>
+</div>
 
 <nav class="nav">
   <button class="nav-tab active" onclick="showPage('month')">This month</button>
@@ -145,13 +156,11 @@
     </div>
     <button class="spill" id="s-pill" onclick="toggleStatus()"></button>
   </div>
-
   <div class="bstrip">
     <div class="bcard"><div class="blbl">Opening</div><div class="bval" id="d-start">&#8212;</div></div>
     <div class="bcard"><div class="blbl">Net</div><div class="bval" id="d-net">&#8212;</div></div>
     <div class="bcard"><div class="blbl">Closing</div><div class="bval" id="d-end">&#8212;</div></div>
   </div>
-
   <div class="section">
     <div class="sec-hdr" onclick="toggleSec('b-milestone')">
       <div class="dot" style="background:var(--text3)"></div>
@@ -164,7 +173,6 @@
       </div>
     </div>
   </div>
-
   <div class="section">
     <div class="sec-hdr" onclick="toggleSec('b-income')">
       <div class="dot" style="background:var(--green)"></div>
@@ -177,7 +185,6 @@
       <button class="add-btn" id="add-income" onclick="addLine('income')">+ add income</button>
     </div>
   </div>
-
   <div class="section">
     <div class="sec-hdr" onclick="toggleSec('b-exp')">
       <div class="dot" style="background:var(--amber)"></div>
@@ -190,7 +197,6 @@
       <button class="add-btn" id="add-exp" onclick="addLine('exp')">+ add expense</button>
     </div>
   </div>
-
   <div class="section">
     <div class="sec-hdr" onclick="toggleSec('b-bal')">
       <div class="dot" style="background:var(--blue)"></div>
@@ -230,7 +236,6 @@
     <div class="pnum" id="p-num">&#8212;</div>
     <div class="psub" id="p-sub"></div>
   </div>
-
   <div class="sec-label">Adjust</div>
   <div class="section">
     <div class="slrow">
@@ -249,7 +254,6 @@
       <span class="slval" id="sl-cost-v">0K</span>
     </div>
   </div>
-
   <div class="sec-label">Breakdown</div>
   <div class="section">
     <div class="line-row"><span class="lname">Opening balance</span><span class="lval" id="p-open">&#8212;</span></div>
@@ -265,14 +269,28 @@
 <!-- HISTORY -->
 <div class="page" id="page-history">
   <div class="sec-label">All months</div>
-  <div id="hist-list"></div>
+  <div id="hist-list"><div class="loading">Loading&#8230;</div></div>
 </div>
 
-<script>
-const MS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ── SEED DATA from your Excel ──
-const SEED={
+// ── FIREBASE CONFIG ──
+const firebaseConfig = {
+  apiKey: "AIzaSyC0JnRMnu0Vt_2Th4qXcvUUEo87cnuoTfQ",
+  authDomain: "finance-app-f3ac3.firebaseapp.com",
+  projectId: "finance-app-f3ac3",
+  storageBucket: "finance-app-f3ac3.firebasestorage.app",
+  messagingSenderId: "221322193594",
+  appId: "1:221322193594:web:12f1ffe0932c662ac8b083"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ── SEED DATA (uploaded once if Firestore is empty) ──
+const SEED = {
   '2025-01':{closed:true,milestone:'',startBal:40.05,endBal:-31.92,income:[{n:'Kernel',v:12.61,note:''},{n:'Аналітика',v:8.27,note:''}],exp:[{n:'Flat',v:7.5,note:''},{n:'Noted',v:33,note:''},{n:'Food',v:28,note:''}]},
   '2025-02':{closed:true,milestone:'New Salary',startBal:-31.92,endBal:-10.99,income:[{n:'Kernel',v:60,note:'new salary'}],exp:[{n:'Flat',v:7.5,note:''},{n:'Noted',v:20,note:''},{n:'Food',v:17,note:''}]},
   '2025-03':{closed:true,milestone:'',startBal:-10.99,endBal:-9.86,income:[{n:'Kernel',v:66.5,note:''}],exp:[{n:'Flat',v:7.5,note:''},{n:'Noted',v:8.5,note:''},{n:'Food',v:33,note:''}]},
@@ -290,204 +308,319 @@ const SEED={
   '2026-03':{closed:false,milestone:'Side Project',startBal:null,endBal:null,income:[{n:'Kernel',v:76.3,note:''},{n:'Аналітика',v:40,note:''}],exp:[{n:'Flat',v:23.5,note:''},{n:'Debt',v:1.68,note:''},{n:'Noted',v:8.6,note:''},{n:'Auto',v:1.5,note:''}]},
 };
 
-let curKey='2026-03';
+// ── STATE ──
+const MS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let curKey = '2026-03';
+let cache  = {};         // local mirror of Firestore docs
+let saveTimer = null;
 
-function load(){try{const s=localStorage.getItem('bgt_v3');if(s){const p=JSON.parse(s);Object.keys(p).forEach(k=>SEED[k]=p[k]);}}catch(e){}}
-function save(){try{localStorage.setItem('bgt_v3',JSON.stringify(SEED));}catch(e){}}
-
-function keyOf(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
-function dateOf(k){const[y,m]=k.split('-').map(Number);return new Date(y,m-1);}
-function labelOf(k){const d=dateOf(k);return MS[d.getMonth()]+' '+d.getFullYear();}
-function prevKey(k){const[y,m]=k.split('-').map(Number);return m===1?(y-1)+'-12':y+'-'+String(m-1).padStart(2,'0');}
-function nextKey(k){const[y,m]=k.split('-').map(Number);return m===12?(y+1)+'-01':y+'-'+String(m+1).padStart(2,'0');}
-
-function getM(k){
-  if(!SEED[k]){
-    const p=SEED[prevKey(k)];
-    SEED[k]={closed:false,milestone:'',startBal:p?p.endBal:null,endBal:null,
-      income:[{n:'Kernel',v:'',note:''}],exp:[{n:'Flat',v:'',note:''},{n:'Food',v:'',note:''}]};
-  }
-  return SEED[k];
+// ── SYNC UI ──
+function syncStatus(state, msg) {
+  const bar = document.getElementById('sync-bar');
+  const txt = document.getElementById('sync-txt');
+  bar.className = 'sync-bar sync-' + state;
+  txt.textContent = msg;
 }
 
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function n2(v){return isNaN(v)?'—':Number(v).toFixed(1);}
+// ── FIRESTORE HELPERS ──
+function docRef(key) { return doc(db, 'months', key); }
+
+async function seedFirestore() {
+  // Only seeds if Firestore is completely empty
+  const snap = await getDocs(collection(db, 'months'));
+  if (!snap.empty) return;
+  syncStatus('saving', 'uploading your history…');
+  for (const [key, data] of Object.entries(SEED)) {
+    await setDoc(docRef(key), data);
+  }
+  syncStatus('saved', 'history uploaded');
+}
+
+async function loadMonth(key) {
+  if (cache[key]) return cache[key];
+  const snap = await getDoc(docRef(key));
+  if (snap.exists()) {
+    cache[key] = snap.data();
+  } else {
+    // new blank month — carry opening from previous closing
+    const prev = cache[prevKey(key)];
+    cache[key] = {
+      closed: false, milestone: '',
+      startBal: prev ? (prev.endBal ?? null) : null,
+      endBal: null,
+      income: [{n:'Kernel',v:'',note:''}],
+      exp:    [{n:'Flat',v:'',note:''},{n:'Food',v:'',note:''}]
+    };
+  }
+  return cache[key];
+}
+
+function scheduleSave(key) {
+  clearTimeout(saveTimer);
+  syncStatus('saving', 'saving…');
+  saveTimer = setTimeout(async () => {
+    try {
+      await setDoc(docRef(key), cache[key]);
+      syncStatus('saved', 'saved');
+    } catch(e) {
+      syncStatus('error', 'save failed — check connection');
+    }
+  }, 800); // debounce 800ms so we don't write on every keystroke
+}
+
+// Live listener for current month — updates UI if fiancée edits
+let unsubscribe = null;
+function listenMonth(key) {
+  if (unsubscribe) unsubscribe();
+  unsubscribe = onSnapshot(docRef(key), (snap) => {
+    if (!snap.exists()) return;
+    const data = snap.data();
+    // Only update if the change came from the other device
+    // (compare serialised to avoid overwriting mid-type)
+    const current = JSON.stringify(cache[key]);
+    const incoming = JSON.stringify(data);
+    if (current !== incoming) {
+      cache[key] = data;
+      renderM();
+    }
+  });
+}
+
+// ── KEY HELPERS ──
+function keyOf(d)  { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function dateOf(k) { const[y,m]=k.split('-').map(Number); return new Date(y,m-1); }
+function labelOf(k){ const d=dateOf(k); return MS[d.getMonth()]+' '+d.getFullYear(); }
+function prevKey(k){ const[y,m]=k.split('-').map(Number); return m===1?(y-1)+'-12':y+'-'+String(m-1).padStart(2,'0'); }
+function nextKey(k){ const[y,m]=k.split('-').map(Number); return m===12?(y+1)+'-01':y+'-'+String(m+1).padStart(2,'0'); }
+function esc(s)    { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ── RENDER MONTH ──
-function renderM(){
-  const data=getM(curKey);
-  const d=dateOf(curKey);
-  document.getElementById('m-lbl').textContent=MS[d.getMonth()]+' '+d.getFullYear();
-  const pill=document.getElementById('s-pill');
-  pill.textContent=data.closed?'closed':'open';
-  pill.className='spill '+(data.closed?'spill-closed':'spill-open');
-  document.getElementById('milestone-in').value=data.milestone||'';
-  document.getElementById('in-start').value=data.startBal!==null&&data.startBal!==undefined?data.startBal:'';
-  document.getElementById('in-end').value=data.endBal!==null&&data.endBal!==undefined?data.endBal:'';
-  const lk=data.closed;
-  document.getElementById('in-start').disabled=lk;
-  document.getElementById('in-end').disabled=lk;
-  document.getElementById('add-income').style.display=lk?'none':'block';
-  document.getElementById('add-exp').style.display=lk?'none':'block';
+function renderM() {
+  const data = cache[curKey];
+  if (!data) return;
+  const d = dateOf(curKey);
+  document.getElementById('m-lbl').textContent = MS[d.getMonth()]+' '+d.getFullYear();
+  const pill = document.getElementById('s-pill');
+  pill.textContent = data.closed ? 'closed' : 'open';
+  pill.className   = 'spill '+(data.closed ? 'spill-closed' : 'spill-open');
+  document.getElementById('milestone-in').value = data.milestone || '';
+  document.getElementById('in-start').value = data.startBal ?? '';
+  document.getElementById('in-end').value   = data.endBal   ?? '';
+  const lk = data.closed;
+  document.getElementById('in-start').disabled = lk;
+  document.getElementById('in-end').disabled   = lk;
+  document.getElementById('add-income').style.display = lk ? 'none' : 'block';
+  document.getElementById('add-exp').style.display    = lk ? 'none' : 'block';
   renderLines('income');
   renderLines('exp');
   recalc();
 }
 
-function renderLines(zone){
-  const data=getM(curKey);
-  const rows=zone==='income'?data.income:data.exp;
-  const el=document.getElementById(zone+'-lines');
-  const lk=data.closed;
-  el.innerHTML='';
-  rows.forEach((row,i)=>{
-    const w=document.createElement('div');
-    w.innerHTML=`<div class="line-row">
-      <input class="iname" type="text" value="${esc(row.n)}" placeholder="Name" ${lk?'disabled':''} oninput="upLine('${zone}',${i},'n',this.value)"/>
-      <input class="ival" type="number" step="0.1" placeholder="0.0" value="${row.v!==''&&row.v!==null?Math.abs(Number(row.v)):''}" ${lk?'disabled':''} oninput="upLine('${zone}',${i},'v',this.value);recalc()"/>
-    </div>
-    <div class="note-wrap"><input class="inote" type="text" value="${esc(row.note||'')}" placeholder="note&#8230;" ${lk?'disabled':''} oninput="upLine('${zone}',${i},'note',this.value)"/></div>`;
+function renderLines(zone) {
+  const data = cache[curKey];
+  if (!data) return;
+  const rows = zone === 'income' ? data.income : data.exp;
+  const el   = document.getElementById(zone+'-lines');
+  const lk   = data.closed;
+  el.innerHTML = '';
+  rows.forEach((row, i) => {
+    const w = document.createElement('div');
+    w.innerHTML = `
+      <div class="line-row">
+        <input class="iname" type="text" value="${esc(row.n)}" placeholder="Name" ${lk?'disabled':''}
+          oninput="window._upLine('${zone}',${i},'n',this.value)" />
+        <input class="ival" type="number" step="0.1" placeholder="0.0"
+          value="${row.v!==''&&row.v!==null?Math.abs(Number(row.v)):''}" ${lk?'disabled':''}
+          oninput="window._upLine('${zone}',${i},'v',this.value);recalc()" />
+      </div>
+      <div class="note-wrap">
+        <input class="inote" type="text" value="${esc(row.note||'')}" placeholder="note…" ${lk?'disabled':''}
+          oninput="window._upLine('${zone}',${i},'note',this.value)" />
+      </div>`;
     el.appendChild(w);
   });
 }
 
-function upLine(zone,i,f,v){
-  const rows=zone==='income'?getM(curKey).income:getM(curKey).exp;
-  rows[i][f]=v; save();
-}
-function addLine(zone){
-  const arr=zone==='income'?getM(curKey).income:getM(curKey).exp;
-  arr.push({n:zone==='income'?'Income':'Expense',v:'',note:''});
-  save(); renderLines(zone); recalc();
-}
-function saveF(f,v){
-  const d=getM(curKey);
-  d[f]=(f==='startBal'||f==='endBal')?(v===''?null:parseFloat(v)):v;
-  save();
-}
+// ── DATA MUTATIONS ──
+window._upLine = function(zone, i, f, v) {
+  const rows = zone==='income' ? cache[curKey].income : cache[curKey].exp;
+  rows[i][f] = v;
+  scheduleSave(curKey);
+};
 
-function recalc(){
-  const data=getM(curKey);
-  const inc=data.income.reduce((a,r)=>a+(parseFloat(r.v)||0),0);
-  const exp=data.exp.reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0);
-  const net=inc-exp;
-  document.getElementById('t-income').textContent=inc.toFixed(1);
-  document.getElementById('t-exp').textContent=exp.toFixed(1);
-  const start=data.startBal; const end=data.endBal;
-  document.getElementById('d-start').textContent=start!==null&&start!==undefined?Math.abs(start).toFixed(1):'—';
-  document.getElementById('d-end').textContent=end!==null&&end!==undefined?end.toFixed(1):'—';
-  const ne=document.getElementById('d-net');
-  ne.textContent=(net>=0?'+':'')+net.toFixed(1);
-  ne.className='bval '+(net>=0?'vpos':'vneg');
-  const ue=document.getElementById('u-val');
-  if(start!==null&&start!==undefined&&end!==null&&end!==undefined){
-    const u=end-start-inc+exp;
-    ue.textContent=(u>=0?'+':'')+u.toFixed(1);
-    const a=Math.abs(u);
-    ue.className='uval '+(a<5?'uok':a<20?'uwarn':'ubad');
-  } else { ue.textContent='—'; ue.className='uval'; }
-  const tot=inc+exp;
-  if(tot>0){document.getElementById('b-inc').style.width=((inc/tot)*100)+'%';document.getElementById('b-exb').style.width=((exp/tot)*100)+'%';}
-}
+window.addLine = function(zone) {
+  const arr = zone==='income' ? cache[curKey].income : cache[curKey].exp;
+  arr.push({n: zone==='income'?'Income':'Expense', v:'', note:''});
+  renderLines(zone); recalc();
+  scheduleSave(curKey);
+};
 
-function toggleStatus(){
-  const data=getM(curKey);
-  if(!data.closed&&data.endBal!==null){
-    const nk=nextKey(curKey);const nd=getM(nk);
-    if(nd.startBal===null) nd.startBal=data.endBal;
+window.saveF = function(f, v) {
+  const d = cache[curKey];
+  d[f] = (f==='startBal'||f==='endBal') ? (v===''?null:parseFloat(v)) : v;
+  scheduleSave(curKey);
+};
+
+window.toggleStatus = function() {
+  const data = cache[curKey];
+  if (!data.closed && data.endBal !== null) {
+    const nk = nextKey(curKey);
+    if (!cache[nk]) {
+      cache[nk] = { closed:false, milestone:'', startBal:data.endBal, endBal:null,
+        income:[{n:'Kernel',v:'',note:''}], exp:[{n:'Flat',v:'',note:''},{n:'Food',v:'',note:''}] };
+    } else if (cache[nk].startBal === null) {
+      cache[nk].startBal = data.endBal;
+    }
+    scheduleSave(nk);
   }
-  data.closed=!data.closed; save(); renderM();
-}
+  data.closed = !data.closed;
+  scheduleSave(curKey);
+  renderM();
+};
+
+// ── RECALC ──
+window.recalc = function() {
+  const data = cache[curKey];
+  if (!data) return;
+  const inc = data.income.reduce((a,r)=>a+(parseFloat(r.v)||0),0);
+  const exp = data.exp.reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0);
+  const net = inc - exp;
+  document.getElementById('t-income').textContent = inc.toFixed(1);
+  document.getElementById('t-exp').textContent    = exp.toFixed(1);
+  const start = data.startBal; const end = data.endBal;
+  document.getElementById('d-start').textContent = start!==null&&start!==undefined ? Math.abs(start).toFixed(1) : '—';
+  document.getElementById('d-end').textContent   = end!==null&&end!==undefined ? end.toFixed(1) : '—';
+  const ne = document.getElementById('d-net');
+  ne.textContent = (net>=0?'+':'')+net.toFixed(1);
+  ne.className = 'bval '+(net>=0?'vpos':'vneg');
+  const ue = document.getElementById('u-val');
+  if (start!==null&&start!==undefined&&end!==null&&end!==undefined) {
+    const u = end - start - inc + exp;
+    ue.textContent = (u>=0?'+':'')+u.toFixed(1);
+    const a = Math.abs(u);
+    ue.className = 'uval '+(a<5?'uok':a<20?'uwarn':'ubad');
+  } else { ue.textContent='—'; ue.className='uval'; }
+  const tot = inc+exp;
+  if (tot>0) {
+    document.getElementById('b-inc').style.width = ((inc/tot)*100)+'%';
+    document.getElementById('b-exb').style.width = ((exp/tot)*100)+'%';
+  }
+};
 
 // ── PLAN ──
-function updatePlan(){
-  const data=getM(curKey);
-  const inc=data.income.reduce((a,r)=>a+(parseFloat(r.v)||0),0);
-  const exp=data.exp.reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0);
-  const start=data.startBal||0;
-  const avail=start+inc-exp;
-  const days=parseInt(document.getElementById('sl-days').value)||1;
-  const extra=parseFloat(document.getElementById('sl-extra').value)||0;
-  const cost=parseFloat(document.getElementById('sl-cost').value)||0;
-  document.getElementById('sl-days-v').textContent=days+'d';
-  document.getElementById('sl-extra-v').textContent=extra.toFixed(1)+'K';
-  document.getElementById('sl-cost-v').textContent=cost.toFixed(1)+'K';
-  const free=avail+extra-cost;
-  const pr=document.getElementById('plan-res');
-  pr.className='plan-res '+(free>=0?'plan-pos':'plan-neg');
-  document.getElementById('p-num').textContent=Math.abs(free).toFixed(1)+' K';
-  document.getElementById('p-sub').textContent=free>=0?`${free.toFixed(1)}K UAH available`:`${Math.abs(free).toFixed(1)}K over budget`;
-  document.getElementById('p-open').textContent=start.toFixed(1)+' K';
-  document.getElementById('p-inc').textContent='+'+inc.toFixed(1)+' K';
-  document.getElementById('p-exp').textContent='−'+exp.toFixed(1)+' K';
-  const ae=document.getElementById('p-avail');
-  ae.textContent=(avail>=0?'+':'')+avail.toFixed(1)+' K';
-  ae.style.color=avail>=0?'var(--green)':'var(--red)';
-}
+window.updatePlan = function() {
+  const data = cache[curKey];
+  if (!data) return;
+  const inc   = data.income.reduce((a,r)=>a+(parseFloat(r.v)||0),0);
+  const exp   = data.exp.reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0);
+  const start = data.startBal || 0;
+  const avail = start + inc - exp;
+  const days  = parseInt(document.getElementById('sl-days').value)||1;
+  const extra = parseFloat(document.getElementById('sl-extra').value)||0;
+  const cost  = parseFloat(document.getElementById('sl-cost').value)||0;
+  document.getElementById('sl-days-v').textContent  = days+'d';
+  document.getElementById('sl-extra-v').textContent = extra.toFixed(1)+'K';
+  document.getElementById('sl-cost-v').textContent  = cost.toFixed(1)+'K';
+  const free = avail + extra - cost;
+  const pr = document.getElementById('plan-res');
+  pr.className = 'plan-res '+(free>=0?'plan-pos':'plan-neg');
+  document.getElementById('p-num').textContent = Math.abs(free).toFixed(1)+' K';
+  document.getElementById('p-sub').textContent = free>=0
+    ? `${free.toFixed(1)}K UAH available`
+    : `${Math.abs(free).toFixed(1)}K over budget`;
+  document.getElementById('p-open').textContent = start.toFixed(1)+' K';
+  document.getElementById('p-inc').textContent  = '+'+inc.toFixed(1)+' K';
+  document.getElementById('p-exp').textContent  = '−'+exp.toFixed(1)+' K';
+  const ae = document.getElementById('p-avail');
+  ae.textContent = (avail>=0?'+':'')+avail.toFixed(1)+' K';
+  ae.style.color = avail>=0?'var(--green)':'var(--red)';
+};
 
 // ── HISTORY ──
-function renderHist(){
-  const c=document.getElementById('hist-list'); c.innerHTML='';
-  const keys=Object.keys(SEED).sort().reverse();
-  keys.forEach(k=>{
-    const data=SEED[k]; if(!data) return;
-    const inc=data.income?data.income.reduce((a,r)=>a+(parseFloat(r.v)||0),0):0;
-    const exp=data.exp?data.exp.reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0):0;
-    const net=inc-exp;
-    const div=document.createElement('div'); div.className='hm';
-    div.innerHTML=`<div class="hm-hdr" onclick="toggleHist('hb-${k}')">
-      <span class="hm-name">${labelOf(k)}</span>
-      ${data.milestone?`<span style="font-size:11px;color:var(--text3)">${esc(data.milestone)}</span>`:''}
-      <span class="hbadge" style="background:${data.closed?'var(--green-bg)':'var(--amber-bg)'};color:${data.closed?'var(--green-text)':'var(--amber-text)'}">${data.closed?'closed':'open'}</span>
-      <span class="hnet" style="color:${net>=0?'var(--green)':'var(--red)'}">${net>=0?'+':''}${net.toFixed(1)}</span>
-    </div>
-    <div class="hm-body" id="hb-${k}">
-      <div class="hrow"><span>Opening</span><span>${data.startBal!==null&&data.startBal!==undefined?data.startBal.toFixed(1)+'K':'—'}</span></div>
-      <div class="hrow"><span>Income</span><span style="color:var(--green)">+${inc.toFixed(1)}K</span></div>
-      <div class="hrow"><span>Expenses</span><span style="color:var(--amber)">−${exp.toFixed(1)}K</span></div>
-      <div class="hrow"><span>Closing</span><span>${data.endBal!==null&&data.endBal!==undefined?data.endBal.toFixed(1)+'K':'—'}</span></div>
-      ${(data.income||[]).filter(r=>r.v).map(r=>`<div class="hrow"><span style="padding-left:12px">${esc(r.n)}</span><span>+${Math.abs(parseFloat(r.v)||0).toFixed(1)}</span></div>`).join('')}
-      ${(data.exp||[]).filter(r=>r.v).map(r=>`<div class="hrow"><span style="padding-left:12px">${esc(r.n)}</span><span>−${Math.abs(parseFloat(r.v)||0).toFixed(1)}</span></div>`).join('')}
-      <button class="goto-btn" onclick="goToMonth('${k}')">Open this month &#8594;</button>
-    </div>`;
+async function renderHist() {
+  const c = document.getElementById('hist-list');
+  c.innerHTML = '<div class="loading">Loading…</div>';
+  // Load all months from Firestore
+  const snap = await getDocs(collection(db, 'months'));
+  const all = {};
+  snap.forEach(d => { all[d.id] = d.data(); cache[d.id] = d.data(); });
+  const keys = Object.keys(all).sort().reverse();
+  c.innerHTML = '';
+  keys.forEach(k => {
+    const data = all[k];
+    const inc = (data.income||[]).reduce((a,r)=>a+(parseFloat(r.v)||0),0);
+    const exp = (data.exp||[]).reduce((a,r)=>a+(Math.abs(parseFloat(r.v)||0)),0);
+    const net = inc - exp;
+    const div = document.createElement('div'); div.className='hm';
+    div.innerHTML = `
+      <div class="hm-hdr" onclick="toggleHist('hb-${k}')">
+        <span class="hm-name">${labelOf(k)}</span>
+        ${data.milestone?`<span style="font-size:11px;color:var(--text3)">${esc(data.milestone)}</span>`:''}
+        <span class="hbadge" style="background:${data.closed?'var(--green-bg)':'var(--amber-bg)'};color:${data.closed?'var(--green-text)':'var(--amber-text)'}">${data.closed?'closed':'open'}</span>
+        <span class="hnet" style="color:${net>=0?'var(--green)':'var(--red)'}">${net>=0?'+':''}${net.toFixed(1)}</span>
+      </div>
+      <div class="hm-body" id="hb-${k}">
+        <div class="hrow"><span>Opening</span><span>${data.startBal!=null?data.startBal.toFixed(1)+'K':'—'}</span></div>
+        <div class="hrow"><span>Income</span><span style="color:var(--green)">+${inc.toFixed(1)}K</span></div>
+        <div class="hrow"><span>Expenses</span><span style="color:var(--amber)">−${exp.toFixed(1)}K</span></div>
+        <div class="hrow"><span>Closing</span><span>${data.endBal!=null?data.endBal.toFixed(1)+'K':'—'}</span></div>
+        ${(data.income||[]).filter(r=>r.v).map(r=>`<div class="hrow"><span style="padding-left:12px">${esc(r.n)}</span><span>+${Math.abs(parseFloat(r.v)||0).toFixed(1)}</span></div>`).join('')}
+        ${(data.exp||[]).filter(r=>r.v).map(r=>`<div class="hrow"><span style="padding-left:12px">${esc(r.n)}</span><span>−${Math.abs(parseFloat(r.v)||0).toFixed(1)}</span></div>`).join('')}
+        <button class="goto-btn" onclick="goToMonth('${k}')">Open this month &#8594;</button>
+      </div>`;
     c.appendChild(div);
   });
 }
 
-function toggleHist(id){const e=document.getElementById(id);e.style.display=e.style.display==='block'?'none':'block';}
-function goToMonth(k){curKey=k;showPage('month');renderM();}
+window.toggleHist = function(id){ const e=document.getElementById(id); e.style.display=e.style.display==='block'?'none':'block'; };
+window.goToMonth  = function(k) { curKey=k; showPage('month'); };
 
-// ── UI ──
-function showPage(n){
+// ── UI HELPERS ──
+window.showPage = async function(n) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+n).classList.add('active');
   [{month:0,plan:1,history:2}[n]].forEach(i=>document.querySelectorAll('.nav-tab')[i].classList.add('active'));
-  if(n==='history') renderHist();
-  if(n==='plan') updatePlan();
-}
+  if (n==='history') await renderHist();
+  if (n==='plan') updatePlan();
+};
 
-function toggleSec(id){
-  const b=document.getElementById(id);const c=document.getElementById('c-'+id);
+window.toggleSec = function(id) {
+  const b=document.getElementById(id); const c=document.getElementById('c-'+id);
   const o=b.style.display!=='none';
   b.style.display=o?'none':'block';
   c.className='chev'+(o?'':' open');
-}
+};
 
-function changeMonth(dir){
+window.changeMonth = async function(dir) {
   const d=dateOf(curKey); d.setMonth(d.getMonth()+dir);
-  curKey=keyOf(d); renderM();
-}
+  curKey=keyOf(d);
+  syncStatus('saving','loading…');
+  await loadMonth(curKey);
+  listenMonth(curKey);
+  renderM();
+  syncStatus('saved','connected');
+};
 
-function initSliders(){
-  const now=new Date();
-  const dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
-  const dl=dim-now.getDate();
-  document.getElementById('sl-days').value=dl;
-  document.getElementById('sl-days').max=dim;
-}
-
-load(); initSliders(); renderM();
+// ── BOOT ──
+(async () => {
+  syncStatus('saving', 'connecting…');
+  try {
+    await seedFirestore();
+    await loadMonth(curKey);
+    listenMonth(curKey);
+    // init sliders
+    const now=new Date();
+    const dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+    document.getElementById('sl-days').value=dim-now.getDate();
+    document.getElementById('sl-days').max=dim;
+    renderM();
+    syncStatus('saved','connected');
+  } catch(e) {
+    syncStatus('error','connection failed — check internet');
+    console.error(e);
+  }
+})();
 </script>
 </body>
 </html>
