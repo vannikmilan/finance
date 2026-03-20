@@ -162,14 +162,16 @@
     .pb-val{font-size:13px;font-weight:500}
 
     /* balance page */
-    .bal-account{background:var(--surface);border:1px solid var(--border2);border-radius:12px;margin-bottom:10px;overflow:hidden}
-    .bal-acc-hdr{display:flex;align-items:center;padding:11px 14px;gap:10px}
+    .bal-account{background:var(--surface);border:1px solid var(--border2);border-radius:12px;margin-bottom:8px;overflow:hidden}
+    .bal-acc-hdr{display:flex;align-items:center;padding:10px 14px;gap:10px}
     .bal-acc-name{font-size:14px;font-weight:500;flex:1}
-    .bal-acc-val{font-size:18px;font-weight:600}
-    .bal-acc-input{width:120px;text-align:right}
+    .bal-acc-input{width:90px;text-align:right;font-size:13px}
+    .bal-hist-val{font-size:12px;font-weight:500;min-width:48px;text-align:right;color:var(--text3)}
+    .bal-hist-val.t1{color:var(--text2)}
     .bal-total-strip{background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
     .bal-total-lbl{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em}
-    .bal-total-val{font-size:24px;font-weight:700}
+    .bal-hist-dates{font-size:10px;color:var(--text3);margin-top:3px}
+    .bal-total-val{font-size:22px;font-weight:700;min-width:70px;text-align:right}
     .bal-date-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
     .bal-date-lbl{font-size:12px;color:var(--text3);flex:1}
     .bal-sync-btn{font-size:12px;padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--text2)}
@@ -398,53 +400,21 @@
     <button class="bal-sync-btn" onclick="saveBalance()">Save balance</button>
   </div>
 
+  <!-- total strip with history -->
   <div class="bal-total-strip">
-    <span class="bal-total-lbl">Total balance</span>
-    <span class="bal-total-val" id="bal-total-val">—</span>
+    <div>
+      <div class="bal-total-lbl">Total balance</div>
+      <div class="bal-hist-dates" id="bal-hist-dates"></div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <div id="bal-prev2-total" style="font-size:13px;font-weight:500;color:var(--text3);text-align:right;min-width:48px"></div>
+      <div id="bal-prev1-total" style="font-size:13px;font-weight:500;color:var(--text2);text-align:right;min-width:48px"></div>
+      <div class="bal-total-val" id="bal-total-val">—</div>
+    </div>
   </div>
 
-  <div class="bal-account">
-    <div class="bal-acc-hdr">
-      <div class="dot" style="background:#3B6D11"></div>
-      <span class="bal-acc-name">Monobank</span>
-      <input type="number" step="0.01" class="bal-acc-input" id="bal-mono" placeholder="0.00 K" oninput="recalcBalance()"/>
-    </div>
-  </div>
-  <div class="bal-account">
-    <div class="bal-acc-hdr">
-      <div class="dot" style="background:#185FA5"></div>
-      <span class="bal-acc-name">Monobank банка</span>
-      <input type="number" step="0.01" class="bal-acc-input" id="bal-mono-jar" placeholder="0.00 K" oninput="recalcBalance()"/>
-    </div>
-  </div>
-  <div class="bal-account">
-    <div class="bal-acc-hdr">
-      <div class="dot" style="background:#BA7517"></div>
-      <span class="bal-acc-name">PrivatBank</span>
-      <input type="number" step="0.01" class="bal-acc-input" id="bal-privat" placeholder="0.00 K" oninput="recalcBalance()"/>
-    </div>
-  </div>
-  <div class="bal-account">
-    <div class="bal-acc-hdr">
-      <div class="dot" style="background:#a32d2d"></div>
-      <span class="bal-acc-name">Crédit Agricole</span>
-      <input type="number" step="0.01" class="bal-acc-input" id="bal-credi" placeholder="0.00 K" oninput="recalcBalance()"/>
-    </div>
-  </div>
-  <div class="bal-account">
-    <div class="bal-acc-hdr">
-      <div class="dot" style="background:#888"></div>
-      <span class="bal-acc-name">Готівка</span>
-      <input type="number" step="0.01" class="bal-acc-input" id="bal-cash" placeholder="0.00 K" oninput="recalcBalance()"/>
-    </div>
-  </div>
-  <div class="bal-account">
-    <div class="bal-acc-hdr">
-      <div class="dot" style="background:#534AB7"></div>
-      <span class="bal-acc-name">Інше</span>
-      <input type="number" step="0.01" class="bal-acc-input" id="bal-other" placeholder="0.00 K" oninput="recalcBalance()"/>
-    </div>
-  </div>
+  <!-- account rows: name | t-2 | t-1 | input -->
+  <div id="bal-accounts"></div>
 </div>
 
 <!-- ══ HISTORY ══ -->
@@ -509,25 +479,25 @@ const SEED={
 
 // Balance seed — end of month snapshots from Balance sheet
 const BAL_SEED={
-  '2024-08':{mono:-25.68,monoJar:0,privat:-1.05,credi:19.9,cash:1.17,other:0,total:-5.66},
-  '2024-09':{mono:-20.38,monoJar:0,privat:-47.11,credi:11.2,cash:0.85,other:0,total:-55.44},
-  '2024-10':{mono:-19.85,monoJar:0,privat:-8.01,credi:0.01,cash:1.0,other:0,total:-26.86},
-  '2024-11':{mono:-14.06,monoJar:0,privat:-14.05,credi:14.38,cash:0.2,other:0,total:-13.54},
-  '2024-12':{mono:3.24,monoJar:0,privat:0.57,credi:20.23,cash:16.0,other:0,total:40.05},
-  '2025-01':{mono:-24.98,monoJar:0,privat:-26.83,credi:1.91,cash:17.98,other:0,total:-31.92},
-  '2025-02':{mono:-27.79,monoJar:0,privat:-31.25,credi:0.02,cash:48.03,other:0,total:-10.99},
-  '2025-03':{mono:null,monoJar:0,privat:null,credi:null,cash:null,other:0,total:-9.86},
-  '2025-04':{mono:-24.33,monoJar:0,privat:-11.8,credi:0.14,cash:57.75,other:0,total:21.77},
-  '2025-05':{mono:-18.32,monoJar:0,privat:-42.48,credi:1.6,cash:37.79,other:0,total:-21.41},
-  '2025-06':{mono:0.32,monoJar:0,privat:-54.17,credi:9.18,cash:39.17,other:0,total:-5.5},
-  '2025-07':{mono:0.08,monoJar:0,privat:11.39,credi:0.5,cash:38.05,other:0,total:50.01},
-  '2025-08':{mono:0.01,monoJar:0,privat:-1.61,credi:8.38,cash:50.93,other:0,total:57.71},
-  '2025-09':{mono:11.54,monoJar:0,privat:0.24,credi:0.76,cash:51.04,other:0,total:63.58},
-  '2025-10':{mono:12.78,monoJar:0,privat:-63.35,credi:13.51,cash:47.4,other:0,total:10.34},
-  '2025-11':{mono:null,monoJar:0,privat:null,credi:null,cash:null,other:0,total:10.14},
-  '2025-12':{mono:0.05,monoJar:0,privat:-12.41,credi:36.65,cash:22.64,other:0,total:46.93},
-  '2026-01':{mono:0.15,monoJar:0,privat:-4.94,credi:3.06,cash:21.8,other:0,total:20.07},
-  '2026-02':{mono:0.0,monoJar:0,privat:-3.73,credi:1.63,cash:0.05,other:56.95,total:58.95},
+  '2024-08':{mono:-25.68,monoJar:0,privat:-1.05,credi:19.9,cash:1.17,apt:0,envelope:0,total:-5.66},
+  '2024-09':{mono:-20.38,monoJar:0,privat:-47.11,credi:11.2,cash:0.85,apt:0,envelope:0,total:-55.44},
+  '2024-10':{mono:-19.85,monoJar:0,privat:-8.01,credi:0.01,cash:1.0,apt:0,envelope:0,total:-26.86},
+  '2024-11':{mono:-14.06,monoJar:0,privat:-14.05,credi:14.38,cash:0.2,apt:0,envelope:0,total:-13.54},
+  '2024-12':{mono:3.24,monoJar:0,privat:0.57,credi:20.23,cash:16.0,apt:0,envelope:0,total:40.05},
+  '2025-01':{mono:-24.98,monoJar:0,privat:-26.83,credi:1.91,cash:17.98,apt:0,envelope:0,total:-31.92},
+  '2025-02':{mono:-27.79,monoJar:0,privat:-31.25,credi:0.02,cash:48.03,apt:0,envelope:0,total:-10.99},
+  '2025-03':{mono:null,monoJar:0,privat:null,credi:null,cash:null,apt:0,envelope:0,total:-9.86},
+  '2025-04':{mono:-24.33,monoJar:0,privat:-11.8,credi:0.14,cash:57.75,apt:0,envelope:0,total:21.77},
+  '2025-05':{mono:-18.32,monoJar:0,privat:-42.48,credi:1.6,cash:37.79,apt:0,envelope:0,total:-21.41},
+  '2025-06':{mono:0.32,monoJar:0,privat:-54.17,credi:9.18,cash:39.17,apt:0,envelope:0,total:-5.5},
+  '2025-07':{mono:0.08,monoJar:0,privat:11.39,credi:0.5,cash:38.05,apt:0,envelope:0,total:50.01},
+  '2025-08':{mono:0.01,monoJar:0,privat:-1.61,credi:8.38,cash:50.93,apt:0,envelope:0,total:57.71},
+  '2025-09':{mono:11.54,monoJar:0,privat:0.24,credi:0.76,cash:51.04,apt:0,envelope:0,total:63.58},
+  '2025-10':{mono:12.78,monoJar:0,privat:-63.35,credi:13.51,cash:47.4,apt:0,envelope:0,total:10.34},
+  '2025-11':{mono:null,monoJar:0,privat:null,credi:null,cash:null,apt:0,envelope:0,total:10.14},
+  '2025-12':{mono:0.05,monoJar:0,privat:-12.41,credi:36.65,cash:22.64,apt:0,envelope:0,total:46.93},
+  '2026-01':{mono:0.15,monoJar:0,privat:-4.94,credi:3.06,cash:21.8,apt:0,envelope:0,total:20.07},
+  '2026-02':{mono:0.0,monoJar:0,privat:-3.73,credi:1.63,cash:0.05,apt:0,envelope:0,other:56.95,total:58.95},
 };
 
 const MS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -842,51 +812,73 @@ window.updatePlan=function(){
 };
 
 // ── BALANCE PAGE ──
+const BAL_ACCOUNTS=[
+  {id:'mono',     label:'Monobank',        color:'#3B6D11'},
+  {id:'monoJar',  label:'Mono — Банка',    color:'#185FA5'},
+  {id:'privat',   label:'PrivatBank',      color:'#BA7517'},
+  {id:'credi',    label:'Crédit Agricole', color:'#a32d2d'},
+  {id:'cash',     label:'Готівка',         color:'#888'},
+  {id:'apt',      label:'В квартирі',      color:'#534AB7'},
+  {id:'envelope', label:'Конверт',         color:'#3B6D11'},
+];
+
 function renderBalancePage(){
   const now=new Date();
-  const k=keyOf(now);
   document.getElementById('bal-as-of').textContent=now.toLocaleDateString('uk-UA',{day:'numeric',month:'long',year:'numeric'});
-  // load from cache if exists
-  const b=balCache[k]||{mono:0,monoJar:0,privat:0,credi:0,cash:0,other:0};
-  document.getElementById('bal-mono').value=b.mono||'';
-  document.getElementById('bal-mono-jar').value=b.monoJar||'';
-  document.getElementById('bal-privat').value=b.privat||'';
-  document.getElementById('bal-credi').value=b.credi||'';
-  document.getElementById('bal-cash').value=b.cash||'';
-  document.getElementById('bal-other').value=b.other||'';
+
+  // find last 2 saved entries by date desc
+  const entries=Object.values(balCache).filter(b=>b.date).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const prev1=entries[0]||null;
+  const prev2=entries[1]||null;
+  const fmtD=b=>b?new Date(b.date).toLocaleDateString('uk-UA',{day:'numeric',month:'short'}):null;
+  const d1=fmtD(prev2); const d2=fmtD(prev1);
+  document.getElementById('bal-hist-dates').textContent=[d1&&`t−2: ${d1}`,d2&&`t−1: ${d2}`].filter(Boolean).join('   ');
+  const p2tv=document.getElementById('bal-prev2-total');
+  const p1tv=document.getElementById('bal-prev1-total');
+  p2tv.textContent=prev2?(prev2.total??0).toFixed(1)+'K':'';
+  p1tv.textContent=prev1?(prev1.total??0).toFixed(1)+'K':'';
+
+  const curBal=balCache[keyOf(now)]||{};
+  const container=document.getElementById('bal-accounts');
+  container.innerHTML='';
+  BAL_ACCOUNTS.forEach(acc=>{
+    const v1=prev2!=null?(prev2[acc.id]??null):null;
+    const v2=prev1!=null?(prev1[acc.id]??null):null;
+    const cur=curBal[acc.id]??'';
+    const div=document.createElement('div'); div.className='bal-account';
+    div.innerHTML=`<div class="bal-acc-hdr">
+      <div class="dot" style="background:${acc.color}"></div>
+      <span class="bal-acc-name">${acc.label}</span>
+      <span class="bal-hist-val">${v1!==null?v1.toFixed(2):''}</span>
+      <span class="bal-hist-val t1">${v2!==null?v2.toFixed(2):''}</span>
+      <input type="number" step="0.01" class="bal-acc-input" id="bal-${acc.id}"
+        placeholder="0.00" value="${cur!==''?Number(cur).toFixed(2):''}" oninput="recalcBalance()"/>
+    </div>`;
+    container.appendChild(div);
+  });
   recalcBalance();
 }
 
 window.recalcBalance=function(){
-  const vals=['mono','mono-jar','privat','credi','cash','other'];
-  const ids=['bal-mono','bal-mono-jar','bal-privat','bal-credi','bal-cash','bal-other'];
   let total=0;
-  ids.forEach(id=>{total+=parseFloat(document.getElementById(id).value)||0;});
+  BAL_ACCOUNTS.forEach(acc=>{const el=document.getElementById('bal-'+acc.id);if(el)total+=parseFloat(el.value)||0;});
   const tv=document.getElementById('bal-total-val');
   tv.textContent=total.toFixed(2)+' K';
   tv.style.color=total>=0?'var(--green)':'var(--red)';
 };
 
 window.saveBalance=async function(){
-  const now=new Date();const k=keyOf(now);
-  const b={
-    mono:parseFloat(document.getElementById('bal-mono').value)||0,
-    monoJar:parseFloat(document.getElementById('bal-mono-jar').value)||0,
-    privat:parseFloat(document.getElementById('bal-privat').value)||0,
-    credi:parseFloat(document.getElementById('bal-credi').value)||0,
-    cash:parseFloat(document.getElementById('bal-cash').value)||0,
-    other:parseFloat(document.getElementById('bal-other').value)||0,
-    date:now.toISOString(),
-  };
-  b.total=b.mono+b.monoJar+b.privat+b.credi+b.cash+b.other;
+  const now=new Date(); const k=keyOf(now);
+  const b={date:now.toISOString()};
+  BAL_ACCOUNTS.forEach(acc=>{const el=document.getElementById('bal-'+acc.id);b[acc.id]=el?parseFloat(el.value)||0:0;});
+  b.total=BAL_ACCOUNTS.reduce((s,acc)=>s+(b[acc.id]||0),0);
   balCache[k]=b;
   syncStatus('saving','saving balance…');
   try{
     await setDoc(balRef(k),b);
-    balCache[k]=b;
     syncStatus('saved','balance saved');
-    // refresh month strip if we're on current month
     if(curKey===k) renderM();
+    renderBalancePage();
   }catch(e){syncStatus('error','save failed');}
 };
 
