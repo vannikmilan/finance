@@ -92,6 +92,7 @@
 
     /* balance strip */
     .bstrip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+    .bstrip.four{grid-template-columns:1fr 1fr 1fr 1fr}
     .bcard{background:var(--surface2);border-radius:10px;padding:9px 12px}
     .blbl{font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
     .bval{font-size:17px;font-weight:600;color:var(--text)}
@@ -190,7 +191,8 @@
     /* bar chart */
     .bal-chart-outer{margin-bottom:4px}
     .bal-chart-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:10px}
-    .bal-chart-bars{display:flex;align-items:flex-end;gap:3px;height:52px}
+    .bal-chart-bars{display:flex;align-items:flex-end;gap:3px;height:52px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .bal-bar-wrap{min-width:calc((100% - 8*3px) / 9);max-width:calc((100% - 8*3px) / 9)}
     .bal-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
     .bal-bar{width:100%;border-radius:3px 3px 0 0;min-height:2px;transition:height .3s}
     .bal-bar-lbl{font-size:9px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center}
@@ -225,10 +227,7 @@
     <button class="spill" id="s-pill" onclick="toggleStatus()"></button>
   </div>
 
-  <div class="toggle-row" id="toggle-row">
-    <button class="toggle-btn active-actual" id="btn-actual" onclick="setMode('actual')">Actual</button>
-    <button class="toggle-btn" id="btn-plan" onclick="setMode('plan')">Planned</button>
-  </div>
+
 
   <div class="last-updated" id="last-updated-lbl"></div>
 
@@ -244,10 +243,11 @@
     </div>
   </div>
 
-  <div class="bstrip">
+  <div class="bstrip" id="bstrip">
     <div class="bcard"><div class="blbl">Opening</div><div class="bval" id="d-start">—</div></div>
     <div class="bcard"><div class="blbl">Net</div><div class="bval" id="d-net">—</div></div>
     <div class="bcard"><div class="blbl" id="closing-lbl">Closing</div><div class="bval" id="d-end">—</div></div>
+    <div class="bcard" id="d-live-card" style="display:none"><div class="blbl">Live</div><div class="bval" id="d-live">—</div></div>
   </div>
 
   <!-- Milestone -->
@@ -284,9 +284,9 @@
       <div class="dot" style="background:var(--purple)"></div>
       <span class="sec-name">Savings</span>
       <span class="sec-total" style="color:var(--purple)" id="t-savings">0</span>
-      <span class="chev" id="c-b-savings">&#9662;</span>
+      <span class="chev open" id="c-b-savings">&#9662;</span>
     </div>
-    <div class="sec-body" id="b-savings" style="display:none">
+    <div class="sec-body" id="b-savings">
       <div id="savings-lines"></div>
       <button class="add-btn" id="add-savings" onclick="addLine('savings')">+ add savings goal</button>
     </div>
@@ -504,7 +504,7 @@ const SEED={
   // 2026
   '2026-01':{closed:true,milestone:'Side Project',startBal:46.93,endBal:20.07,income:[{n:'Kernel',v:40.9,note:''},{n:'Аналітика',v:0,note:''}],exp:[{n:'Flat',v:25.7,note:''},{n:'Debt',v:2.68,note:''},{n:'Noted',v:14.4,note:'3+9+1.2+1.2'},{n:'Auto',v:2.0,note:'0.5+1.5'},{n:'Food',v:13.45,note:'9.5+3.5+0.45'}]},
   '2026-02':{closed:true,milestone:'Side Project',startBal:20.07,endBal:58.95,income:[{n:'Kernel',v:72.07,note:''},{n:'Аналітика',v:40,note:''}],exp:[{n:'Flat',v:25.3,note:''},{n:'Debt',v:2.68,note:''},{n:'Noted',v:40.1,note:'1.1+11+14+7+3+3+1'},{n:'Auto',v:7.4,note:'4.7+1.5+0.7+0.5'},{n:'Food',v:8,note:'2+6'}]},
-  '2026-03':{closed:false,milestone:'Side Project',startBal:58.95,endBal:null,savings:[{n:'Emergency fund',v:'',note:''}],income:[{n:'Kernel',v:76.3,note:''},{n:'Аналітика',v:40,note:''}],exp:[{n:'Flat',v:23.5,note:''},{n:'Debt',v:1.68,note:''},{n:'Noted',v:8.6,note:''},{n:'Auto',v:1.5,note:''}]},
+  '2026-03':{closed:false,milestone:'Side Project',startBal:58.95,endBal:null,savings:[{n:'Emergency fund',v:'',note:''},{n:'Travel',v:'',note:''},{n:'Envelope',v:'',note:''}],income:[{n:'Kernel',v:76.3,note:''},{n:'Аналітика',v:40,note:''}],exp:[{n:'Flat',v:23.5,note:''},{n:'Debt',v:1.68,note:''},{n:'Noted',v:8.6,note:''},{n:'Auto',v:1.5,note:''}]},
 };
 
 // Balance seed — end of month snapshots from Balance sheet
@@ -566,7 +566,7 @@ async function loadMonth(k){
   else{
     const p=cache[prevKey(k)];
     cache[k]={closed:false,milestone:'',startBal:p?(p.endBal??null):null,endBal:null,
-      savings:[],fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',updatedAt:null,
+      savings:[{n:'Emergency fund',v:'',note:''},{n:'Travel',v:'',note:''},{n:'Envelope',v:'',note:''}],fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',updatedAt:null,
       income:[{n:'Kernel',v:'',note:''}],exp:[{n:'Flat',v:'',note:''},{n:'Food',v:'',note:''}]};
   }
   if(!cache[k].savings)cache[k].savings=[];
@@ -625,7 +625,19 @@ function renderM(){
   document.getElementById('add-income').style.display=lk?'none':'block';
   document.getElementById('add-exp').style.display=lk?'none':'block';
   document.getElementById('add-savings').style.display=lk?'none':'block';
-  document.getElementById('toggle-row').style.display=lk?'none':'flex';
+  // live balance card — show if we have a balance entry for this month
+  const liveCard=document.getElementById('d-live-card');
+  const liveEl=document.getElementById('d-live');
+  const bData=balCache[curKey];
+  if(bData&&bData.total!==undefined){
+    liveCard.style.display='block';
+    document.getElementById('bstrip').className='bstrip four';
+    liveEl.textContent=bData.total.toFixed(1);
+    liveEl.className='bval '+(bData.total>=0?'vpos':'vneg');
+  } else {
+    liveCard.style.display='none';
+    document.getElementById('bstrip').className='bstrip';
+  }
 
   // forecast strip only on open current month
   const fcStrip=document.getElementById('fc-strip');
@@ -785,7 +797,7 @@ window.toggleStatus=function(){
   data.closed=!data.closed;scheduleSave(curKey);renderM();
 };
 function getOrBlank(k){
-  if(!cache[k])cache[k]={closed:false,milestone:'',startBal:null,endBal:null,savings:[],fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',updatedAt:null,income:[{n:'Kernel',v:'',note:''}],exp:[{n:'Flat',v:'',note:''},{n:'Food',v:'',note:''}]};
+  if(!cache[k])cache[k]={closed:false,milestone:'',startBal:null,endBal:null,savings:[{n:'Emergency fund',v:'',note:''},{n:'Travel',v:'',note:''},{n:'Envelope',v:'',note:''}],fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',updatedAt:null,income:[{n:'Kernel',v:'',note:''}],exp:[{n:'Flat',v:'',note:''},{n:'Food',v:'',note:''}]};
   return cache[k];
 }
 
@@ -871,11 +883,10 @@ window.saveBalance=async function(){
   syncStatus('saving','saving balance…');
   try{
     await setDoc(balRef(k),b);
-    // also update current month's startBal / endBal context
-    if(cache[k]){
-      // if month is open, update the opening of next month if current month uses this as closing
-    }
+    balCache[k]=b;
     syncStatus('saved','balance saved');
+    // refresh month strip if we're on current month
+    if(curKey===k) renderM();
   }catch(e){syncStatus('error','save failed');}
 };
 
@@ -895,7 +906,7 @@ async function renderHist(){
   if(chartKeys.length>1){
     chartOuter.style.display='block';
     const bars=document.getElementById('bal-chart-bars');bars.innerHTML='';
-    const recent=chartKeys.slice(-12);
+    const recent=chartKeys;
     const vals=recent.map(k=>all[k].endBal);
     const mn=Math.min(...vals);const mx=Math.max(...vals);const range=mx-mn||1;
     recent.forEach(k=>{
@@ -908,6 +919,8 @@ async function renderHist(){
         <div class="bal-bar-lbl">${MS[dateOf(k).getMonth()]} ${String(dateOf(k).getFullYear()).slice(2)}</div>`;
       bars.appendChild(bw);
     });
+    // scroll to rightmost (most recent)
+    setTimeout(()=>{bars.scrollLeft=bars.scrollWidth;},50);
   } else {chartOuter.style.display='none';}
 
   keys.forEach(k=>{
