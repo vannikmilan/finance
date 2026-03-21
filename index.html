@@ -437,9 +437,10 @@
   <div id="hist-list"><div class="loading">Loading…</div></div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-<script>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {getFirestore,doc,getDoc,setDoc,onSnapshot,collection,getDocs}
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig={
   apiKey:"AIzaSyC0JnRMnu0Vt_2Th4qXcvUUEo87cnuoTfQ",
@@ -449,15 +450,10 @@ const firebaseConfig={
   messagingSenderId:"221322193594",
   appId:"1:221322193594:web:12f1ffe0932c662ac8b083"
 };
-firebase.initializeApp(firebaseConfig);
-const db=firebase.firestore();
-function docRef(k){return db.collection('months').doc(k);}
-function balRef(k){return db.collection('balances').doc(k);}
-async function getDoc(ref){return ref.get();}
-async function setDoc(ref,data){return ref.set(data);}
-async function getDocs(col){return col.get();}
-function collection(name){return db.collection(name);}
-function onSnapshot(ref,cb){return ref.onSnapshot(cb);}
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+function docRef(k){return doc(db,'months',k);}
+function balRef(k){return doc(db,'balances',k);}
 
 // ── SEED DATA (2024 + 2025 + 2026) ──
 const SEED={
@@ -518,9 +514,9 @@ function isCurrentMonth(k){const n=new Date();return k===keyOf(n)}
 function fmtDate(ts){if(!ts)return '';const d=new Date(ts);return d.toLocaleDateString('uk-UA',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
 
 async function seedFirestore(){
-  const snap=await getDocs(collection('months'));
+  const snap=await getDocs(collection(db,'months'));
   if(!snap.empty){
-    const bSnap=await getDocs(collection('balances'));
+    const bSnap=await getDocs(collection(db,'balances'));
     if(bSnap.empty){
       syncStatus('saving','uploading balance history…');
       for(const r of BAL_HISTORY) await setDoc(balRef(r.date),r);
@@ -967,7 +963,7 @@ async function saveBalance(){
 async function renderHist(){
   const c=document.getElementById('hist-list');
   c.innerHTML='<div class="loading">Loading…</div>';
-  const snap=await getDocs(collection('months'));
+  const snap=await getDocs(collection(db,'months'));
   const all={};
   snap.forEach(d=>{all[d.id]=d.data();cache[d.id]=d.data();});
   const keys=Object.keys(all).sort().reverse();
@@ -1061,7 +1057,7 @@ async function changeMonth(dir){
   syncStatus('saving','connecting…');
   try{
     await seedFirestore();
-    const bSnap=await getDocs(collection('balances'));
+    const bSnap=await getDocs(collection(db,'balances'));
     bSnap.forEach(d=>{balCache[d.id]=d.data();});
     await loadMonth(prevKey(curKey));
     await loadMonth(curKey);
@@ -1073,6 +1069,15 @@ async function changeMonth(dir){
     console.error(e);
   }
 })();
+
+// expose to window so HTML onclick handlers work inside type="module"
+Object.assign(window,{
+  changeMonth,showPage,toggleSec,toggleStatus,
+  addLine,saveF,recalc,updatePlan,
+  onBalDateChange,recalcBalance,saveBalance,
+  toggleHist,goToMonth,setMode,
+  _upLine,_togglePlanned
+});
 </script>
 </body>
 </html>
