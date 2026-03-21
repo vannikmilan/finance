@@ -542,36 +542,64 @@ async function loadMonth(k){
   return cache[k];
 }
 
-function scheduleSave(k, userInitiated=false){
+function scheduleSave(k,userInitiated=false){
   clearTimeout(saveTimer);
   syncStatus('saving','saving…');
-  if(userInitiated && isCurrentMonth(k)) cache[k].updatedAt=Date.now();
+  if(userInitiated&&isCurrentMonth(k)) cache[k].updatedAt=Date.now();
+  isSyncing=true;
   saveTimer=setTimeout(async()=>{
     try{
-      isSyncing=true;
       await setDoc(docRef(k),cache[k]);
-      isSyncing=false;
       syncStatus('saved','saved');
-    }
-    catch(e){isSyncing=false;syncStatus('error','save failed');}
+    }catch(e){syncStatus('error','save failed');}
+    finally{isSyncing=false;saveTimer=null;}
   },800);
 }
+
+let lastTyped=0;
+document.addEventListener('input',()=>{lastTyped=Date.now();},true);
 
 function listenMonth(k){
   if(unsubscribe)unsubscribe();
   unsubscribe=onSnapshot(docRef(k),(snap)=>{
-    if(!snap.exists()||isSyncing)return;
+    if(!snap.exists())return;
+    if(isSyncing)return; // our own write
+    if(Date.now()-lastTyped<3000)return; // user typed recently
     const d=snap.data();
     if(JSON.stringify(cache[k])!==JSON.stringify(d)){
       cache[k]=d;
-      if(!isUserTyping()) renderM();
+      renderM();
     }
   });
 }
 
 // ── RENDER MONTH ──
 async function silentSave(k){
+  isSyncing=true;
   try{ await setDoc(docRef(k),cache[k]); } catch(e){}
+  isSyncing=false;
+}
+
+// update just the live balance card — no DOM rebuild, won't clear inputs
+function updateLiveCard(){
+  const mp=curKey+'-';
+  const mbe=Object.entries(balCache).filter(([k])=>k.startsWith(mp));
+  const lbe=mbe.sort(([a],[b])=>b.localeCompare(a))[0];
+  const bData=lbe?lbe[1]:null;
+  const liveCard=document.getElementById('d-live-card');
+  const liveEl=document.getElementById('d-live');
+  if(bData&&bData.total!==undefined){
+    liveCard.style.display='block';
+    document.getElementById('bstrip').className='bstrip four';
+    liveEl.textContent=bData.total.toFixed(1);
+    liveEl.className='bval '+(bData.total>=0?'vpos':'vneg');
+    // also update closing display
+    const inEnd=document.getElementById('in-end');
+    if(inEnd&&!cache[curKey]?.closed) inEnd.value=bData.total.toFixed(2);
+  } else {
+    liveCard.style.display='none';
+    document.getElementById('bstrip').className='bstrip';
+  }
 }
 
 function renderM(){
@@ -589,24 +617,20 @@ function renderM(){
     luEl.textContent='Updated '+fmtDate(data.updatedAt);
   } else {luEl.textContent='';}
 
-  // opening — always from prev month closing, locked
+  // opening — from prev month closing, locked
   const prevData=cache[prevKey(curKey)];
   const autoStart=prevData?(prevData.endBal??null):null;
-  if(data.startBal===null&&autoStart!==null){data.startBal=autoStart;silentSave(curKey);}
-  document.getElementById('in-start').value=data.startBal??'';
+  if(data.startBal===null&&autoStart!==null) data.startBal=autoStart;
+  document.getElementById('in-start').value=data.startBal!=null?data.startBal:'';
   document.getElementById('in-start').disabled=true;
 
-  // closing — always from balance page, read-only
+  // closing — read live from balCache, never written to month doc
   const monthPrefix=curKey+'-';
-  const monthBalEntries=Object.entries(balCache).filter(([k])=>k.startsWith(monthPrefix)||k===curKey);
+  const monthBalEntries=Object.entries(balCache).filter(([k])=>k.startsWith(monthPrefix));
   const latestBalEntry=monthBalEntries.sort(([a],[b])=>b.localeCompare(a))[0];
   const balTotal=latestBalEntry?(latestBalEntry[1].total??null):null;
-  if(balTotal!==null){
-    const rounded=Math.round(balTotal*1000)/1000;
-    const current=data.endBal!==null&&data.endBal!==undefined?Math.round(data.endBal*1000)/1000:null;
-    if(current!==rounded){data.endBal=rounded;silentSave(curKey);}
-  }
-  document.getElementById('in-end').value=data.endBal!=null&&!isNaN(data.endBal)?Number(data.endBal).toFixed(2):'';
+  const displayEnd=data.closed?data.endBal:balTotal;
+  document.getElementById('in-end').value=displayEnd!=null?Number(displayEnd).toFixed(2):'';
   document.getElementById('in-end').disabled=true;
   document.getElementById('close-notice').style.display=(!data.closed&&balTotal===null)?'block':'none';
 
@@ -614,19 +638,7 @@ function renderM(){
   document.getElementById('add-income').style.display=lk?'none':'block';
   document.getElementById('add-exp').style.display=lk?'none':'block';
   document.getElementById('add-savings').style.display=lk?'none':'block';
-  // live balance card
-  const liveCard=document.getElementById('d-live-card');
-  const liveEl=document.getElementById('d-live');
-  const bData=latestBalEntry?latestBalEntry[1]:null;
-  if(bData&&bData.total!==undefined){
-    liveCard.style.display='block';
-    document.getElementById('bstrip').className='bstrip four';
-    liveEl.textContent=bData.total.toFixed(1);
-    liveEl.className='bval '+(bData.total>=0?'vpos':'vneg');
-  } else {
-    liveCard.style.display='none';
-    document.getElementById('bstrip').className='bstrip';
-  }
+  updateLiveCard();
 
   // forecast strip only on open current month
   const fcStrip=document.getElementById('fc-strip');
@@ -771,13 +783,20 @@ function saveF(f,v){
 function toggleStatus(){
   const data=cache[curKey];
   if(!data.closed){
-    if(!data.endBal){
+    // get latest balance entry for this month
+    const mp=curKey+'-';
+    const mbe=Object.entries(balCache).filter(([k])=>k.startsWith(mp));
+    const lbe=mbe.sort(([a],[b])=>b.localeCompare(a))[0];
+    const bt=lbe?(lbe[1].total??null):null;
+    if(bt===null){
       document.getElementById('b-bal').style.display='block';
       document.getElementById('c-b-bal').className='chev open';
       document.getElementById('close-notice').style.display='block';
       alert('Go to the Balance tab and save a balance entry for this month first.');
       return;
     }
+    // snapshot the closing balance into the month doc once
+    data.endBal=Math.round(bt*1000)/1000;
     const nk=nextKey(curKey);const nd=getOrBlank(nk);
     if(nd.startBal===null){nd.startBal=data.endBal;scheduleSave(nk,true);}
   }
@@ -954,8 +973,8 @@ async function saveBalance(){
     syncStatus('saved','balance saved');
     selectedBalDate=dateKey;
     populateBalSlicer();
-    // refresh month page if this date falls in current month
-    if(dateKey.slice(0,7)===curKey) renderM();
+    // update live card on month page without full re-render
+    if(dateKey.slice(0,7)===curKey) updateLiveCard();
   }catch(e){syncStatus('error','save failed');}
 };
 
