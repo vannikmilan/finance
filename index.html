@@ -437,10 +437,9 @@
   <div id="hist-list"><div class="loading">Loading…</div></div>
 </div>
 
-<script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {getFirestore,doc,getDoc,setDoc,onSnapshot,collection,getDocs}
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
 
 const firebaseConfig={
   apiKey:"AIzaSyC0JnRMnu0Vt_2Th4qXcvUUEo87cnuoTfQ",
@@ -450,8 +449,15 @@ const firebaseConfig={
   messagingSenderId:"221322193594",
   appId:"1:221322193594:web:12f1ffe0932c662ac8b083"
 };
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+function docRef(k){return db.collection('months').doc(k);}
+function balRef(k){return db.collection('balances').doc(k);}
+async function getDoc(ref){return ref.get();}
+async function setDoc(ref,data){return ref.set(data);}
+async function getDocs(col){return col.get();}
+function collection(name){return db.collection(name);}
+function onSnapshot(ref,cb){return ref.onSnapshot(cb);}
 
 // ── SEED DATA (2024 + 2025 + 2026) ──
 const SEED={
@@ -497,11 +503,10 @@ let cache={};
 let balCache={};
 let saveTimer=null;
 let unsubscribe=null;
-let isSyncing=false; // prevents onSnapshot → renderM → save loop
+let isSyncing=false;
+function isUserTyping(){const a=document.activeElement;return a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA');}
 
 function syncStatus(s,m){document.getElementById('sync-bar').className='sync-bar sync-'+s;document.getElementById('sync-txt').textContent=m}
-function docRef(k){return doc(db,'months',k)}
-function balRef(k){return doc(db,'balances',k)}
 function keyOf(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
 function dateOf(k){const[y,m]=k.split('-').map(Number);return new Date(y,m-1)}
 function labelOf(k){const d=dateOf(k);return MS[d.getMonth()]+' '+d.getFullYear()}
@@ -513,19 +518,18 @@ function isCurrentMonth(k){const n=new Date();return k===keyOf(n)}
 function fmtDate(ts){if(!ts)return '';const d=new Date(ts);return d.toLocaleDateString('uk-UA',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
 
 async function seedFirestore(){
-  const snap=await getDocs(collection(db,'months'));
+  const snap=await getDocs(collection('months'));
   if(!snap.empty){
-    // seed balances if missing
-    const bSnap=await getDocs(collection(db,'balances'));
+    const bSnap=await getDocs(collection('balances'));
     if(bSnap.empty){
       syncStatus('saving','uploading balance history…');
-      for(const r of BAL_HISTORY) await setDoc(doc(db,'balances',r.date),r);
+      for(const r of BAL_HISTORY) await setDoc(balRef(r.date),r);
     }
     return;
   }
   syncStatus('saving','uploading history…');
   for(const[k,d]of Object.entries(SEED)) await setDoc(docRef(k),d);
-  for(const r of BAL_HISTORY) await setDoc(doc(db,'balances',r.date),r);
+  for(const r of BAL_HISTORY) await setDoc(balRef(r.date),r);
 }
 
 async function loadMonth(k){
@@ -562,7 +566,10 @@ function listenMonth(k){
   unsubscribe=onSnapshot(docRef(k),(snap)=>{
     if(!snap.exists()||isSyncing)return;
     const d=snap.data();
-    if(JSON.stringify(cache[k])!==JSON.stringify(d)){cache[k]=d;renderM();}
+    if(JSON.stringify(cache[k])!==JSON.stringify(d)){
+      cache[k]=d;
+      if(!isUserTyping()) renderM();
+    }
   });
 }
 
@@ -662,26 +669,26 @@ function renderLines(zone){
     const w=document.createElement('div');
     const accent=isPlanned?'border-left:2px solid var(--purple);padding-left:12px':'';
     w.innerHTML=`<div class="line-row" style="${accent}">
-      ${zone==='exp'&&!lk?`<span style="font-size:10px;color:var(--text3);cursor:pointer;padding-right:4px" title="${isPlanned?'planned':'actual'}" onclick="window._togglePlanned(${i})">${isPlanned?'P':'A'}</span>`:''}
+      ${zone==='exp'&&!lk?`<span style="font-size:10px;color:var(--text3);cursor:pointer;padding-right:4px" title="${isPlanned?'planned':'actual'}" onclick="_togglePlanned(${i})">${isPlanned?'P':'A'}</span>`:''}
       <input class="iname" type="text" value="${esc(row.n)}" placeholder="Name" ${lk?'disabled':''}
-        oninput="window._upLine('${zone}',${i},'n',this.value)"/>
+        oninput="_upLine('${zone}',${i},'n',this.value)"/>
       <input class="ival" type="number" step="0.1" placeholder="0.0"
         value="${row.v!==''&&row.v!==null?Math.abs(Number(row.v)):''}" ${lk?'disabled':''}
-        oninput="window._upLine('${zone}',${i},'v',this.value);recalc()"/>
+        oninput="_upLine('${zone}',${i},'v',this.value);recalc()"/>
     </div>
     <div class="note-wrap"><input class="inote" type="text" value="${esc(row.note||'')}"
-      placeholder="note…" ${lk?'disabled':''} oninput="window._upLine('${zone}',${i},'note',this.value)"/></div>`;
+      placeholder="note…" ${lk?'disabled':''} oninput="_upLine('${zone}',${i},'note',this.value)"/></div>`;
     el.appendChild(w);
   });
 }
 
-window._togglePlanned=function(i){
+function _togglePlanned(i){
   const rows=cache[curKey].exp;
   rows[i].planned=!rows[i].planned;
   renderLines('exp');recalc();scheduleSave(curKey,true);
 };
 
-window.recalc=function(){
+function recalc(){
   const data=cache[curKey];if(!data)return;
   const inc=(data.income||[]).reduce((a,r)=>a+(parseFloat(r.v)||0),0);
   const sav=(data.savings||[]).reduce((a,r)=>a+(parseFloat(r.v)||0),0);
@@ -738,7 +745,7 @@ window.recalc=function(){
 };
 
 // ── MODE TOGGLE ──
-window.setMode=function(m){
+function setMode(m){
   viewMode=m;
   document.getElementById('btn-actual').className='toggle-btn '+(m==='actual'?'active-actual':'');
   document.getElementById('btn-plan').className='toggle-btn '+(m==='plan'?'active-plan':'');
@@ -746,26 +753,26 @@ window.setMode=function(m){
 };
 
 // ── MUTATIONS ──
-window._upLine=function(zone,i,f,v){
+function _upLine(zone,i,f,v){
   let rows;
   if(zone==='income')rows=cache[curKey].income;
   else if(zone==='savings')rows=cache[curKey].savings;
   else rows=cache[curKey].exp;
   rows[i][f]=v;scheduleSave(curKey,true);
 };
-window.addLine=function(zone){
+function addLine(zone){
   let arr,dflt;
   if(zone==='income'){arr=cache[curKey].income;dflt={n:'Income',v:'',note:''};}
   else if(zone==='savings'){arr=cache[curKey].savings;dflt={n:'Savings goal',v:'',note:''};}
   else{arr=cache[curKey].exp;dflt={n:'Expense',v:'',note:'',planned:viewMode==='plan'};}
   arr.push(dflt);renderLines(zone);recalc();scheduleSave(curKey,true);
 };
-window.saveF=function(f,v){
+function saveF(f,v){
   const d=cache[curKey];
   d[f]=(f==='startBal'||f==='endBal')?(v===''?null:parseFloat(v)):v;
   scheduleSave(curKey,true);
 };
-window.toggleStatus=function(){
+function toggleStatus(){
   const data=cache[curKey];
   if(!data.closed){
     if(!data.endBal){
@@ -786,7 +793,7 @@ function getOrBlank(k){
 }
 
 // ── PLAN ──
-window.updatePlan=function(){
+function updatePlan(){
   const data=cache[curKey];if(!data)return;
   const inc=(data.income||[]).reduce((a,r)=>a+(parseFloat(r.v)||0),0);
   const sav=(data.savings||[]).reduce((a,r)=>a+(parseFloat(r.v)||0),0);
@@ -880,7 +887,7 @@ function populateBalSlicer(){
   onBalDateChange();
 }
 
-window.onBalDateChange=function(){
+function onBalDateChange(){
   const sel=document.getElementById('bal-date-select');
   selectedBalDate=sel.value;
   const history=getMergedHistory();
@@ -927,7 +934,7 @@ window.onBalDateChange=function(){
   recalcBalance();
 };
 
-window.recalcBalance=function(){
+function recalcBalance(){
   let total=0;
   BAL_ACCOUNTS.forEach(acc=>{const el=document.getElementById('bal-'+acc.id);if(el)total+=parseFloat(el.value)||0;});
   const tv=document.getElementById('bal-total-val');
@@ -935,7 +942,7 @@ window.recalcBalance=function(){
   tv.style.color=total>=0?'var(--green)':'var(--red)';
 };
 
-window.saveBalance=async function(){
+async function saveBalance(){
   const isNew=selectedBalDate==='__today__';
   const today=new Date().toISOString().slice(0,10);
   const dateKey=isNew?today:selectedBalDate;
@@ -947,7 +954,7 @@ window.saveBalance=async function(){
   balCache[dateKey]=b;
   syncStatus('saving','saving balance…');
   try{
-    await setDoc(doc(db,'balances',dateKey),b);
+    await setDoc(balRef(dateKey),b);
     syncStatus('saved','balance saved');
     selectedBalDate=dateKey;
     populateBalSlicer();
@@ -960,7 +967,7 @@ window.saveBalance=async function(){
 async function renderHist(){
   const c=document.getElementById('hist-list');
   c.innerHTML='<div class="loading">Loading…</div>';
-  const snap=await getDocs(collection(db,'months'));
+  const snap=await getDocs(collection('months'));
   const all={};
   snap.forEach(d=>{all[d.id]=d.data();cache[d.id]=d.data();});
   const keys=Object.keys(all).sort().reverse();
@@ -1018,11 +1025,11 @@ async function renderHist(){
   });
 }
 
-window.toggleHist=function(id){const e=document.getElementById(id);e.style.display=e.style.display==='block'?'none':'block';};
-window.goToMonth=function(k){curKey=k;showPage('month');};
+function toggleHist(id){const e=document.getElementById(id);e.style.display=e.style.display==='block'?'none':'block';};
+function goToMonth(k){curKey=k;showPage('month');};
 
 // ── UI ──
-window.showPage=async function(n){
+async function showPage(n){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+n).classList.add('active');
@@ -1032,13 +1039,13 @@ window.showPage=async function(n){
   if(n==='plan')updatePlan();
   if(n==='balance')populateBalSlicer();
 };
-window.toggleSec=function(id){
+function toggleSec(id){
   const b=document.getElementById(id);const c=document.getElementById('c-'+id);
   const o=b.style.display!=='none';
   b.style.display=o?'none':'block';
   c.className='chev'+(o?'':' open');
 };
-window.changeMonth=async function(dir){
+async function changeMonth(dir){
   const d=dateOf(curKey);d.setMonth(d.getMonth()+dir);
   curKey=keyOf(d);
   syncStatus('saving','loading…');
@@ -1054,7 +1061,7 @@ window.changeMonth=async function(dir){
   syncStatus('saving','connecting…');
   try{
     await seedFirestore();
-    const bSnap=await getDocs(collection(db,'balances'));
+    const bSnap=await getDocs(collection('balances'));
     bSnap.forEach(d=>{balCache[d.id]=d.data();});
     await loadMonth(prevKey(curKey));
     await loadMonth(curKey);
