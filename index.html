@@ -201,6 +201,19 @@ input:disabled{opacity:.5}
 .save-settings-btn{margin:16px;width:calc(100% - 32px);padding:11px;font-size:14px;font-weight:500;background:var(--blue);color:#fff;border:none;border-radius:10px;cursor:pointer}
 .save-settings-btn:hover{opacity:.9}
 
+/* FORECAST / ACTUAL columns */
+.fa-hdr{display:flex;align-items:center;padding:4px 14px 3px;gap:6px;border-bottom:1px solid var(--b2);background:var(--s2)}
+.fa-hdr-name{flex:1;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--t3)}
+.fa-hdr-col{width:76px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);text-align:right}
+.fa-row{display:flex;align-items:center;padding:7px 14px;gap:6px;border-bottom:1px solid var(--b2)}
+.fa-row:last-child{border-bottom:none}
+.fa-name{flex:1;font-size:13px;color:var(--t2)}
+.fa-inp{width:76px;text-align:right;font-size:13px;font-family:'SF Mono',monospace;font-variant-numeric:tabular-nums}
+.fa-inp.fc{background:none;border:1px solid transparent;color:var(--t3)}
+.fa-inp.fc:focus{background:var(--s2);border-color:var(--b);color:var(--t)}
+.fa-inp.ac{background:var(--s2);border:1px solid var(--b)}
+.card-total-sub{font-size:10px;color:var(--t3);font-weight:400;margin-left:4px;font-family:'SF Mono',monospace}
+
 .loading{text-align:center;padding:40px;color:var(--t3);font-size:14px}
 
 /* CATEGORY BREAKDOWN on month page */
@@ -260,7 +273,7 @@ input:disabled{opacity:.5}
     <div class="bcard"><div class="bcard-lbl">Opening</div><div class="bcard-val" id="d-open">—</div></div>
     <div class="bcard"><div class="bcard-lbl">Net</div><div class="bcard-val" id="d-net">—</div></div>
     <div class="bcard"><div class="bcard-lbl" id="d-close-lbl">Closing</div><div class="bcard-val" id="d-close">—</div></div>
-    <div class="bcard" id="d-live-card" style="display:none"><div class="bcard-lbl">Live</div><div class="bcard-val" id="d-live">—</div></div>
+    <div class="bcard" id="d-live-card" style="display:none"><div class="bcard-lbl" id="d-live-lbl">Live</div><div class="bcard-val" id="d-live">—</div></div>
   </div>
 
   <div class="free-strip free-pos" id="free-strip" style="display:none">
@@ -300,7 +313,7 @@ input:disabled{opacity:.5}
         <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
       </div>
       <span class="card-title">&#1044;&#1086;&#1093;&#1086;&#1076;&#1080;</span>
-      <span class="card-total" style="color:var(--green)" id="t-inc">0</span>
+      <span class="card-total" style="color:var(--green)" id="t-inc">0</span><span class="card-total-sub" id="t-inc-fc"></span>
       <span class="chev open" id="c-b-inc">&#9662;</span>
     </div>
     <div class="card-body" id="b-inc" style="display:block"><div id="inc-lines"></div></div>
@@ -313,7 +326,7 @@ input:disabled{opacity:.5}
         <svg viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><path d="M19 9V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-3"/><circle cx="17" cy="12" r="3"/></svg>
       </div>
       <span class="card-title">Savings</span>
-      <span class="card-total" style="color:var(--purple)" id="t-sav">0</span>
+      <span class="card-total" style="color:var(--purple)" id="t-sav">0</span><span class="card-total-sub" id="t-sav-fc"></span>
       <span class="chev open" id="c-b-sav">&#9662;</span>
     </div>
     <div class="card-body" id="b-sav" style="display:block"><div id="sav-lines"></div></div>
@@ -326,10 +339,30 @@ input:disabled{opacity:.5}
         <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10"/><path d="M8 12h8M12 8v8"/></svg>
       </div>
       <span class="card-title">&#1042;&#1080;&#1090;&#1088;&#1072;&#1090;&#1080;</span>
-      <span class="card-total" style="color:var(--amber)" id="t-exp">0</span>
+      <span class="card-total" style="color:var(--amber)" id="t-exp">0</span><span class="card-total-sub" id="t-exp-fc"></span>
       <span class="chev open" id="c-b-exp">&#9662;</span>
     </div>
-    <div class="card-body" id="b-exp" style="display:block"><div id="exp-lines"></div></div>
+    <div class="card-body" id="b-exp" style="display:block">
+      <div id="exp-lines"></div>
+      <!-- unexplained rows — only on open months -->
+      <div id="unexpl-open-rows" style="display:none">
+        <div style="height:1px;background:var(--b2);margin:0 14px"></div>
+        <div class="fa-row" style="padding:9px 14px">
+          <span class="fa-name" style="color:var(--t3);font-size:12px">
+            Actual unexplained
+            <span style="font-size:10px;display:block;color:var(--t3);font-style:italic">opening + actual income − actual exp − balance</span>
+          </span>
+          <span id="unexpl-act-val" style="font-size:14px;font-weight:600;font-family:'SF Mono',monospace;min-width:76px;text-align:right">—</span>
+        </div>
+        <div class="fa-row" style="padding:9px 14px;border-bottom:none">
+          <span class="fa-name" style="color:var(--t3);font-size:12px">
+            Forecast remaining
+            <span style="font-size:10px;display:block;color:var(--t3);font-style:italic">opening + total income − savings − fixed exp − balance</span>
+          </span>
+          <span id="unexpl-fc-val" style="font-size:14px;font-weight:600;font-family:'SF Mono',monospace;min-width:76px;text-align:right">—</span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Milestone -->
@@ -707,8 +740,10 @@ const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>
 const isCur=k=>{const n=new Date();return k===ky(n)};
 const dLeft=()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth()+1,0).getDate()-n.getDate()};
 
-// sum values from month data object {catName: {v, note}}
+// sum actual values
 const sumObj=obj=>Object.values(obj||{}).reduce((a,r)=>a+(parseFloat(r.v)||0),0);
+// sum forecast values
+const sumFc=obj=>Object.values(obj||{}).reduce((a,r)=>a+(parseFloat(r.fc)||0),0);
 
 function ss(s,m){
   const el=document.getElementById('sync');
@@ -867,37 +902,62 @@ function renderLines(zone){
   const el=document.getElementById(zone+'-lines');
   el.innerHTML='';
 
-  // build rows from category list
-  // if closed: skip categories with no value (clean view)
-  // if has legacy cats not in settings list, show them too
   const allCats=[...cats_z];
-  // add any legacy cats from data not in settings
   Object.keys(vals).forEach(n=>{if(!allCats.includes(n)) allCats.push(n);});
 
-  allCats.forEach(name=>{
-    const entry=vals[name]||{v:'',note:''};
-    const hasVal=entry.v!==''&&entry.v!==null&&parseFloat(entry.v)!==0;
-    if(lk&&!hasVal) return; // closed: hide blank rows
+  // filter on closed: hide rows with no actual value
+  const visibleCats=lk ? allCats.filter(n=>{
+    const e=vals[n]||{};
+    return (e.v!==''&&e.v!==null&&parseFloat(e.v)!==0);
+  }) : allCats;
+
+  if(visibleCats.length===0){
+    if(lk) el.innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--t3)">no entries</div>';
+    return;
+  }
+
+  // column header — only on open months
+  if(!lk){
+    const hdr=document.createElement('div');
+    hdr.className='fa-hdr';
+    hdr.innerHTML=`<span class="fa-hdr-name">Category</span>
+      <span class="fa-hdr-col" style="color:var(--t3)">Forecast</span>
+      <span class="fa-hdr-col" style="color:var(--t2)">Actual</span>`;
+    el.appendChild(hdr);
+  }
+
+  visibleCats.forEach(name=>{
+    const entry=vals[name]||{v:'',fc:'',note:''};
+    const actVal=entry.v!==''&&entry.v!==null?Math.abs(parseFloat(entry.v)||0):'';
+    const fcVal=entry.fc!==''&&entry.fc!==null?Math.abs(parseFloat(entry.fc)||0):'';
 
     const w=document.createElement('div');
-    w.innerHTML=`<div class="row">
-      <span class="row-lbl" style="font-size:13px;color:var(--t2)">${esc(name)}</span>
-      <input class="ival" type="number" step="0.1" placeholder="0.0"
-        value="${hasVal?Math.abs(parseFloat(entry.v)):''}"
-        ${lk?'disabled':''}
-        oninput="setVal('${zone}','${esc(name)}',this.value)"/>
-    </div>
-    <div class="note-wrap"><input class="inote" type="text"
-      value="${esc(entry.note||'')}" placeholder="note…"
-      ${lk?'disabled':''}
-      oninput="setNote('${zone}','${esc(name)}',this.value)"/></div>`;
+    if(lk){
+      // closed: single value, no forecast
+      w.innerHTML=`<div class="fa-row">
+        <span class="fa-name">${esc(name)}</span>
+        <input class="fa-inp ac" type="number" step="0.1" placeholder="0.0"
+          value="${actVal}" disabled/>
+      </div>
+      <div class="note-wrap"><input class="inote" type="text"
+        value="${esc(entry.note||'')}" placeholder="note…" disabled/></div>`;
+    } else {
+      // open: forecast + actual side by side
+      w.innerHTML=`<div class="fa-row">
+        <span class="fa-name">${esc(name)}</span>
+        <input class="fa-inp fc" type="number" step="0.1" placeholder="—"
+          value="${fcVal}"
+          oninput="setPlan('${zone}','${esc(name)}',this.value)"/>
+        <input class="fa-inp ac" type="number" step="0.1" placeholder="0.0"
+          value="${actVal}"
+          oninput="setVal('${zone}','${esc(name)}',this.value)"/>
+      </div>
+      <div class="note-wrap"><input class="inote" type="text"
+        value="${esc(entry.note||'')}" placeholder="note…"
+        oninput="setNote('${zone}','${esc(name)}',this.value)"/></div>`;
+    }
     el.appendChild(w);
   });
-
-  // if no rows shown on closed month
-  if(lk && el.innerHTML===''){
-    el.innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--t3)">no entries</div>';
-  }
 }
 
 function recalc(){
@@ -905,12 +965,37 @@ function recalc(){
   const inc=sumObj(data.inc);
   const sav=sumObj(data.sav);
   const exp=sumObj(data.exp);
+  const fcInc=sumFc(data.inc);
+  const fcSav=sumFc(data.sav);
+  const fcExp=sumFc(data.exp);
   const start=data.startBal??0;
-  const net=inc-sav-exp;
 
-  document.getElementById('t-inc').textContent=inc.toFixed(1);
-  document.getElementById('t-sav').textContent=sav.toFixed(1);
-  document.getElementById('t-exp').textContent=exp.toFixed(1);
+  // total = actual + forecast always
+  const totalInc=inc+fcInc;
+  const totalSav=sav+fcSav;
+  const totalExp=exp+fcExp;
+  // net for ending balance = income − expenses only (savings stays in your balance)
+  const net=totalInc-totalExp;
+  // free to spend = income − savings − expenses (savings is set aside)
+  const freeNet=totalInc-totalSav-totalExp;
+
+  // card headers: show actual + forecast breakdown
+  document.getElementById('t-inc').textContent=totalInc.toFixed(1);
+  document.getElementById('t-sav').textContent=totalSav.toFixed(1);
+  document.getElementById('t-exp').textContent=totalExp.toFixed(1);
+
+  const incFcEl=document.getElementById('t-inc-fc');
+  const savFcEl=document.getElementById('t-sav-fc');
+  const expFcEl=document.getElementById('t-exp-fc');
+  if(!data.closed){
+    if(incFcEl) incFcEl.textContent=fcInc>0?'('+inc.toFixed(1)+'+'+fcInc.toFixed(1)+')':'';
+    if(savFcEl) savFcEl.textContent=fcSav>0?'('+sav.toFixed(1)+'+'+fcSav.toFixed(1)+')':'';
+    if(expFcEl) expFcEl.textContent=fcExp>0?'('+exp.toFixed(1)+'+'+fcExp.toFixed(1)+')':'';
+  } else {
+    if(incFcEl) incFcEl.textContent='';
+    if(savFcEl) savFcEl.textContent='';
+    if(expFcEl) expFcEl.textContent='';
+  }
 
   // live card
   const balEntry=latestBalForMonth(curKey);
@@ -921,6 +1006,12 @@ function recalc(){
     liveCard.style.display='block';bs.className='bstrip s4';
     document.getElementById('d-live').textContent=liveTotal.toFixed(1);
     document.getElementById('d-live').className='bcard-val vsky';
+    // show date of balance entry
+    const liveLbl=document.getElementById('d-live-lbl');
+    if(liveLbl&&balEntry.date){
+      const d=new Date(balEntry.date);
+      liveLbl.textContent=d.toLocaleDateString('uk-UA',{day:'numeric',month:'short'});
+    }
   } else {liveCard.style.display='none';bs.className='bstrip s3';}
 
   document.getElementById('d-open').textContent=start.toFixed(1);
@@ -934,12 +1025,14 @@ function recalc(){
     document.getElementById('free-strip').style.display='none';
     document.getElementById('fc-strip').style.display='none';
     document.getElementById('exp-summary-card').style.display='block';
+    const uRows=document.getElementById('unexpl-open-rows');
+    if(uRows) uRows.style.display='none';
     document.getElementById('d-close-lbl').textContent='Closing';
     document.getElementById('d-close').textContent=data.endBal!=null?data.endBal.toFixed(1):'—';
     if(data.endBal!=null){
-      const totalExp=start+inc-data.endBal;
-      document.getElementById('total-exp-derived').textContent=totalExp.toFixed(1)+' K';
-      const unexpl=totalExp-exp;
+      const derivedExp=start+inc-data.endBal;
+      document.getElementById('total-exp-derived').textContent=derivedExp.toFixed(1)+' K';
+      const unexpl=derivedExp-exp;
       const uel=document.getElementById('unexpl');
       uel.textContent=(unexpl>=0?'':'-')+Math.abs(unexpl).toFixed(1)+' K';
       const a=Math.abs(unexpl);
@@ -947,9 +1040,10 @@ function recalc(){
     }
   } else {
     document.getElementById('exp-summary-card').style.display='none';
-    document.getElementById('d-close-lbl').textContent='Forecast';
+    document.getElementById('d-close-lbl').textContent='Est. closing';
     document.getElementById('d-close').textContent=(start+net).toFixed(1);
-    const free=inc-sav-exp;
+    // free to spend uses freeNet (income − savings − expenses)
+    const free=freeNet;
     const fs=document.getElementById('free-strip');
     fs.style.display='flex';
     fs.className='free-strip '+(free>=0?'free-pos':'free-neg');
@@ -961,6 +1055,35 @@ function recalc(){
       document.getElementById('fc-date').textContent=new Date().toLocaleDateString('uk-UA',{day:'numeric',month:'long'});
       document.getElementById('fc-pd').textContent=dl>0?(free/dl).toFixed(2):'—';
     } else {document.getElementById('fc-strip').style.display='none';}
+
+    // ── UNEXPLAINED ROWS (open month) ──
+    const uRows=document.getElementById('unexpl-open-rows');
+    uRows.style.display='block';
+
+    const balEntry2=latestBalForMonth(curKey);
+    const auEl=document.getElementById('unexpl-act-val');
+    const frEl=document.getElementById('unexpl-fc-val');
+
+    if(!balEntry2){
+      // no balance entry yet — can't calculate either value meaningfully
+      auEl.textContent='— (no balance)';
+      auEl.style.color='var(--t3)';
+      frEl.textContent='— (no balance)';
+      frEl.style.color='var(--t3)';
+    } else {
+      const curBal=balEntry2.total;
+
+      // Actual unexplained = opening + actual income − actual expenses − current balance
+      const actUnexpl=start+inc-exp-curBal;
+      auEl.textContent=(actUnexpl>=0?'+':'')+actUnexpl.toFixed(1)+' K';
+      auEl.style.color=Math.abs(actUnexpl)<3?'var(--green)':actUnexpl>0?'var(--amber)':'var(--blue)';
+
+      // Forecast remaining = opening + total income − fixed expenses − current balance
+      // NOTE: savings NOT subtracted — savings is separate from spending budget
+      const fcRemain=start+totalInc-totalExp-curBal;
+      frEl.textContent=(fcRemain>=0?'+':'')+fcRemain.toFixed(1)+' K';
+      frEl.style.color=fcRemain>=0?'var(--green)':'var(--red)';
+    }
   }
 
   // ── CATEGORY BREAKDOWN (Cash / Savings / Prepaid) ──
@@ -996,6 +1119,7 @@ function recalc(){
     bdCard.style.display='none';
     console.error('breakdown error',e);
   }
+} // end recalc
 
 // ── MONTH ACTIONS ──
 window.prevMonth=async()=>{curKey=pk(curKey);await renderMonth();};
@@ -1008,15 +1132,21 @@ window.tog=id=>{
 };
 window.setVal=(zone,name,v)=>{
   const d=mCache[curKey];
-  if(!d[zone][name]) d[zone][name]={v:'',note:''};
+  if(!d[zone][name]) d[zone][name]={v:'',fc:'',note:''};
   d[zone][name].v=v;
   recalc();queueSave();
 };
 window.setNote=(zone,name,v)=>{
   const d=mCache[curKey];
-  if(!d[zone][name]) d[zone][name]={v:'',note:''};
+  if(!d[zone][name]) d[zone][name]={v:'',fc:'',note:''};
   d[zone][name].note=v;
   queueSave();
+};
+window.setPlan=(zone,name,v)=>{
+  const d=mCache[curKey];
+  if(!d[zone][name]) d[zone][name]={v:'',fc:'',note:''};
+  d[zone][name].fc=v;
+  recalc();queueSave();
 };
 window.setField=(f,v)=>{mCache[curKey][f]=v;queueSave();};
 window.toggleClose=async()=>{
@@ -1134,10 +1264,18 @@ window.saveSettings=async()=>{
 // ── SPEND ──
 function renderSpend(){
   const data=mCache[curKey]; if(!data) return;
-  const inc=sumObj(data.inc);
-  const sav=sumObj(data.sav);
-  const exp=sumObj(data.exp);
+  const actInc=sumObj(data.inc);
+  const actSav=sumObj(data.sav);
+  const actExp=sumObj(data.exp);
+  const fcLineInc=sumFc(data.inc);
+  const fcLineSav=sumFc(data.sav);
+  const fcLineExp=sumFc(data.exp);
+  // total = actual + forecast from line items
+  const totalInc=actInc+fcLineInc;
+  const totalSav=actSav+fcLineSav;
+  const totalExp=actExp+fcLineExp;
   const start=data.startBal??0;
+  // spend? page also has extra adjustments
   const fcInc=parseFloat(data.fcInc)||0;
   const fcExp=parseFloat(data.fcExp)||0;
 
@@ -1146,11 +1284,13 @@ function renderSpend(){
   document.getElementById('fc-inc-note').value=data.fcIncNote||'';
   document.getElementById('fc-exp-note').value=data.fcExpNote||'';
 
-  // update page header month label
   const mlEl=document.getElementById('sp-month-lbl');
   if(mlEl) mlEl.textContent=lbl(curKey);
 
-  const free=start+inc-sav-exp+fcInc-fcExp;
+  // net for ending balance = income − expenses (savings stays in balance)
+  const net2=totalInc-totalExp;
+  // free to spend = income − savings − expenses
+  const free=start+totalInc-totalSav-totalExp+fcInc-fcExp;
   const dl=dLeft();
   const hero=document.getElementById('spend-hero');
   hero.className='hero '+(free>=0?'hero-pos':'hero-neg');
@@ -1159,9 +1299,9 @@ function renderSpend(){
   document.getElementById('sp-free').textContent=Math.abs(free).toFixed(1)+' K';
   document.getElementById('sp-pd').textContent=free>=0&&dl>0?`= ${(free/dl).toFixed(2)} K per day`:free<0?`${Math.abs(free).toFixed(1)}K over`:'';
   document.getElementById('sp-open').textContent=start.toFixed(1)+' K';
-  document.getElementById('sp-inc').textContent='+'+inc.toFixed(1)+' K';
-  document.getElementById('sp-sav').textContent=sav>0?'−'+sav.toFixed(1)+' K':'0';
-  document.getElementById('sp-exp').textContent='−'+exp.toFixed(1)+' K';
+  document.getElementById('sp-inc').textContent='+'+totalInc.toFixed(1)+' K';
+  document.getElementById('sp-sav').textContent=totalSav>0?'−'+totalSav.toFixed(1)+' K':'0';
+  document.getElementById('sp-exp').textContent='−'+totalExp.toFixed(1)+' K';
   document.getElementById('sp-finc').textContent=fcInc>0?'+'+fcInc.toFixed(1)+' K':'+0';
   document.getElementById('sp-fexp').textContent=fcExp>0?'−'+fcExp.toFixed(1)+' K':'−0';
   const rf=document.getElementById('sp-result');
@@ -1190,7 +1330,7 @@ function renderBalancePage(){
   });
   if(!selBalDate) selBalDate=sorted.includes(today)?today:'__new__';
   sel.value=selBalDate;
-  onBalSel();
+  window.onBalSel();
 }
 window.onBalSel=()=>{
   try{
@@ -1234,7 +1374,7 @@ window.onBalSel=()=>{
     </div>`;
     container.appendChild(div);
   });
-  calcBalTotal();
+  window.calcBalTotal();
   }catch(e){console.error('onBalSel error',e);}
 };
 window.cycleAcctCat=async(ai)=>{
@@ -1252,6 +1392,7 @@ window.cycleAcctCat=async(ai)=>{
   try{await setDoc(sRef(),{...savedCats,accounts:savedAccounts});}catch(e){}
   if(document.getElementById('page-month').classList.contains('on')) recalc();
 };
+window.calcBalTotal=function(){
   let t=0;savedAccounts.forEach(a=>{const e=document.getElementById('bv-'+a.id);if(e)t+=parseFloat(e.value)||0;});
   const el=document.getElementById('bal-total-now');
   el.textContent=t.toFixed(2)+' K';el.style.color=t>=0?'var(--green)':'var(--red)';
