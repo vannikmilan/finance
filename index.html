@@ -241,10 +241,6 @@ input:disabled{opacity:.5}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     Month
   </button>
-  <button class="ntab" onclick="goPage('spend')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-    Spend?
-  </button>
   <button class="ntab" onclick="goPage('balance')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
     Balance
@@ -297,11 +293,11 @@ input:disabled{opacity:.5}
 
   <div class="card" id="exp-summary-card" style="display:none">
     <div class="unexpl-row">
-      <span class="unexpl-lbl">Total expenses<br><span style="font-size:10px">opening + income − closing</span></span>
-      <span style="font-size:15px;font-weight:600;color:var(--amber)" id="total-exp-derived">—</span>
+      <span class="unexpl-lbl">Total expenses<br><span style="font-size:10px;color:var(--t3)">opening + income − closing</span></span>
+      <span style="font-size:15px;font-weight:600;font-family:'SF Mono',monospace;color:var(--amber)" id="total-exp-derived">—</span>
     </div>
     <div class="unexpl-row" style="border-top:1px solid var(--b2)">
-      <span class="unexpl-lbl">Unexplained<br><span style="font-size:10px">total exp − categorised</span></span>
+      <span class="unexpl-lbl">Unexplained<br><span style="font-size:10px;color:var(--t3)">total exp − categorised</span></span>
       <span class="unexpl-val" id="unexpl">—</span>
     </div>
   </div>
@@ -382,60 +378,6 @@ input:disabled{opacity:.5}
   </div>
 
   <div id="m-updated" style="font-size:10px;color:var(--t3);text-align:right;margin-top:4px"></div>
-</div>
-
-<!-- ══ SPEND ══ -->
-<div class="page" id="page-spend">
-  <!-- Page header like Figma -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-    <div>
-      <div style="font-size:16px;font-weight:600">How much can I spend?</div>
-      <div style="font-size:12px;color:var(--t3);margin-top:1px" id="sp-month-lbl">—</div>
-    </div>
-    <div style="background:rgba(245,158,11,.12);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" width="18" height="18" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-    </div>
-  </div>
-
-  <div class="hero hero-pos" id="spend-hero">
-    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
-      <span class="hero-days" id="sp-days">0</span>
-      <span class="hero-days-lbl" id="sp-days-lbl">days left</span>
-    </div>
-    <div class="hero-free-lbl">Free to spend</div>
-    <div class="hero-free" id="sp-free">— K</div>
-    <div class="hero-pd" id="sp-pd"></div>
-  </div>
-  <div class="slbl">Forecast adjustments</div>
-  <div class="card">
-    <div class="fc-input-row">
-      <span class="fi-lbl">Expected extra income</span>
-      <div class="fi-right">
-        <input type="number" step="0.1" placeholder="0.0 K" id="fc-inc" oninput="setField('fcInc',this.value);renderSpend()"/>
-        <input type="text" class="fi-note" placeholder="note…" id="fc-inc-note" oninput="setField('fcIncNote',this.value)"/>
-      </div>
-    </div>
-    <div class="fc-input-row">
-      <span class="fi-lbl">Expected extra expenses</span>
-      <div class="fi-right">
-        <input type="number" step="0.1" placeholder="0.0 K" id="fc-exp" oninput="setField('fcExp',this.value);renderSpend()"/>
-        <input type="text" class="fi-note" placeholder="note…" id="fc-exp-note" oninput="setField('fcExpNote',this.value)"/>
-      </div>
-    </div>
-  </div>
-  <div class="slbl">Breakdown</div>
-  <div class="card">
-    <div class="pb-row"><span class="pb-lbl">Opening balance</span><span class="pb-val" id="sp-open">—</span></div>
-    <div class="pb-row"><span class="pb-lbl">Income so far</span><span class="pb-val" id="sp-inc">—</span></div>
-    <div class="pb-row"><span class="pb-lbl">Savings set aside</span><span class="pb-val" id="sp-sav">—</span></div>
-    <div class="pb-row"><span class="pb-lbl">Expenses so far</span><span class="pb-val" id="sp-exp">—</span></div>
-    <div class="pb-row"><span class="pb-lbl">+ Expected income</span><span class="pb-val" id="sp-finc" style="color:var(--green)">—</span></div>
-    <div class="pb-row"><span class="pb-lbl">− Expected expenses</span><span class="pb-val" id="sp-fexp" style="color:var(--amber)">—</span></div>
-    <div class="pb-row" style="border-top:1px solid var(--b2)">
-      <span class="pb-lbl" style="font-weight:500">Free to spend</span>
-      <span class="pb-val" id="sp-result" style="font-weight:600">—</span>
-    </div>
-  </div>
 </div>
 
 <!-- ══ BALANCE ══ -->
@@ -549,39 +491,59 @@ const sRef=()=>doc(db,'settings','categories');
 const DEFAULT_CATS={
   inc:['Kernel','Аналітика','Допомога від батьків'],
   sav:['Emergency fund','Travel','Envelope'],
-  exp:['KSE','Flat','Debt','Noted','Auto','Food','Unexplained']
+  exp:['KSE','Flat','Debt','Noted','Auto','Food']
 };
 
+
+
+
+
+// ── SEED DATA ──
+
+
+
+
+const DEFAULT_ACCOUNTS=[
+  {id:'mono',     label:'Monobank',        cat:'cash'},
+  {id:'monoJar',  label:'Mono — Банка',    cat:'savings'},
+  {id:'privat',   label:'PrivatBank',      cat:'cash'},
+  {id:'credi',    label:'Crédit Agricole', cat:'cash'},
+  {id:'cash',     label:'Готівка',         cat:'cash'},
+  {id:'apt',      label:'В квартирі',      cat:'prepaid'},
+  {id:'envelope', label:'Конверт',         cat:'prepaid'},
+];
+const ACC_CATS=['cash','savings','prepaid'];
+
 const MONTHS_SEED={
-  '2024-01':{closed:true,milestone:'',startBal:-2.399,endBal:-2.399,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 26.503, "note": ""}},sav:{},exp:{"Flat": {"v": 7, "note": ""}, "Food": {"v": 13.88, "note": ""}, "Unexplained": {"v": 5.623, "note": ""}}},
-  '2024-02':{closed:true,milestone:'New Salary',startBal:-2.399,endBal:-2.399,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 37.425, "note": ""}},sav:{},exp:{"Flat": {"v": 7, "note": ""}, "Food": {"v": 15.343, "note": ""}, "Unexplained": {"v": 15.082, "note": ""}}},
-  '2024-03':{closed:true,milestone:'',startBal:-2.399,endBal:-2.399,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 34.667, "note": ""}},sav:{},exp:{"Flat": {"v": 7, "note": ""}, "Food": {"v": 19.744, "note": ""}, "Unexplained": {"v": 7.923, "note": ""}}},
-  '2024-04':{closed:true,milestone:'',startBal:-2.399,endBal:-2.399,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 35.001, "note": ""}},sav:{},exp:{"Flat": {"v": 7, "note": ""}, "Food": {"v": 20.262, "note": ""}, "Unexplained": {"v": 7.739, "note": ""}}},
-  '2024-05':{closed:true,milestone:'',startBal:-2.399,endBal:-31.525,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 33.41, "note": ""}},sav:{},exp:{"Flat": {"v": 7, "note": ""}, "Noted": {"v": 29.126, "note": "iPhone14"}, "Food": {"v": 11.706, "note": ""}, "Unexplained": {"v": 14.704, "note": ""}}},
-  '2024-06':{closed:true,milestone:'',startBal:-31.525,endBal:-31.525,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 38.536, "note": ""}},sav:{},exp:{"Flat": {"v": 7, "note": ""}, "Food": {"v": 14.038, "note": ""}, "Unexplained": {"v": 17.498, "note": ""}}},
-  '2024-07':{closed:true,milestone:'',startBal:-31.525,endBal:-31.525,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 32.295, "note": ""}, "Допомога від батьків": {"v": 8.226, "note": ""}},sav:{},exp:{"Flat": {"v": 7, "note": ""}, "Food": {"v": 18.025, "note": ""}, "Unexplained": {"v": 15.497, "note": ""}}},
-  '2024-08':{closed:true,milestone:'',startBal:-31.525,endBal:-19.144,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 39.004, "note": ""}, "Допомога від батьків": {"v": 18, "note": ""}},sav:{},exp:{"Flat": {"v": 7, "note": ""}, "Noted": {"v": 3.5, "note": "Air Fryer"}, "Food": {"v": 16.143, "note": ""}, "Unexplained": {"v": 17.98, "note": ""}}},
-  '2024-09':{closed:true,milestone:'KSE - виплата кредиту',startBal:-19.144,endBal:-55.445,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 35.598, "note": ""}, "Допомога від батьків": {"v": 11.1, "note": ""}},sav:{},exp:{"KSE": {"v": 50, "note": ""}, "Flat": {"v": 7, "note": ""}, "Food": {"v": 16.143, "note": ""}, "Unexplained": {"v": 9.857, "note": ""}}},
-  '2024-10':{closed:true,milestone:'New Salary',startBal:-55.445,endBal:-26.863,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 48.918, "note": ""}, "Допомога від батьків": {"v": 10, "note": ""}},sav:{},exp:{"Flat": {"v": 7.5, "note": ""}, "Food": {"v": 16.143, "note": ""}, "Unexplained": {"v": 6.693, "note": ""}}},
-  '2024-11':{closed:true,milestone:'',startBal:-26.863,endBal:-13.536,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 99.532, "note": ""}, "Допомога від батьків": {"v": 28.452, "note": ""}},sav:{},exp:{"Flat": {"v": 7.5, "note": ""}, "Food": {"v": 16.143, "note": ""}, "Unexplained": {"v": 91.015, "note": ""}}},
-  '2024-12':{closed:true,milestone:'',startBal:-13.536,endBal:40.048,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 58.747, "note": ""}, "Допомога від батьків": {"v": 2, "note": ""}},sav:{},exp:{"Flat": {"v": 7.5, "note": ""}, "Unexplained": {"v": 0.337, "note": ""}}},
-  '2025-01':{closed:true,milestone:'',startBal:40.048,endBal:-31.92,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 12.613, "note": ""}, "Допомога від батьків": {"v": 8.27, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "note": ""}, "Flat": {"v": 7.5, "note": ""}, "Noted": {"v": 33, "note": "Карпати + Сумка Бершкін"}, "Food": {"v": 28, "note": ""}, "Unexplained": {"v": 15.851, "note": ""}}},
-  '2025-02':{closed:true,milestone:'New Salary',startBal:-31.92,endBal:-10.991,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 60, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "note": ""}, "Flat": {"v": 7.5, "note": ""}, "Noted": {"v": 20, "note": "Стоматолог + Монітор"}, "Food": {"v": 17, "note": ""}, "Unexplained": {"v": 13.929, "note": ""}}},
-  '2025-03':{closed:true,milestone:'',startBal:-10.991,endBal:-9.86,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 66.5, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "note": ""}, "Flat": {"v": 7.5, "note": ""}, "Noted": {"v": 8.5, "note": "Заняття з Євгенією Здоровя"}, "Food": {"v": 33, "note": ""}, "Unexplained": {"v": 7.869, "note": ""}}},
-  '2025-04':{closed:true,milestone:'',startBal:-9.86,endBal:21.765,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 75.167, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "note": ""}, "Flat": {"v": 7.5, "note": ""}, "Food": {"v": 19, "note": ""}, "Unexplained": {"v": 8.542, "note": ""}}},
-  '2025-05':{closed:true,milestone:'New flat',startBal:21.765,endBal:-21.413,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 69.921, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "note": ""}, "Flat": {"v": 28.5, "note": ""}, "Noted": {"v": 10, "note": "Поїздка до львова готель Ференс"}, "Food": {"v": 34, "note": ""}, "Unexplained": {"v": 32.099, "note": ""}}},
-  '2025-06':{closed:true,milestone:'',startBal:-21.413,endBal:-5.501,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 65.567, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "note": ""}, "Flat": {"v": 21.37, "note": ""}, "Debt": {"v": 1.001, "note": ""}, "Food": {"v": 19, "note": ""}, "Unexplained": {"v": 0.216, "note": ""}}},
-  '2025-07':{closed:true,milestone:'Help from Father',startBal:-5.501,endBal:50.014,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 70.321, "note": ""}, "Допомога від батьків": {"v": 50, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "note": ""}, "Flat": {"v": 22.73, "note": ""}, "Debt": {"v": 1.001, "note": ""}, "Food": {"v": 15, "note": ""}, "Unexplained": {"v": 17.575, "note": ""}}},
-  '2025-08':{closed:true,milestone:'',startBal:50.014,endBal:57.709,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 75.255, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "note": ""}, "Flat": {"v": 23.74, "note": ""}, "Debt": {"v": 2.681, "note": ""}, "Food": {"v": 18, "note": ""}, "Unexplained": {"v": 14.639, "note": ""}}},
-  '2025-09':{closed:true,milestone:'',startBal:57.709,endBal:63.584,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 85.19, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "note": ""}, "Flat": {"v": 23.445, "note": ""}, "Debt": {"v": 2.681, "note": ""}, "Noted": {"v": 14, "note": "Одяг та витрати на весілля Богданчика"}, "Food": {"v": 18, "note": ""}, "Unexplained": {"v": 12.689, "note": ""}}},
-  '2025-10':{closed:true,milestone:'Car',startBal:63.584,endBal:10.337,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 57.262, "note": ""}, "Допомога від батьків": {"v": 20.75, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "note": ""}, "Flat": {"v": 23.547, "note": ""}, "Debt": {"v": 2.681, "note": ""}, "Noted": {"v": 63.464, "note": "Витрати з покупкою машини"}, "Food": {"v": 17, "note": ""}, "Unexplained": {"v": 16.066, "note": ""}}},
-  '2025-11':{closed:true,milestone:'New Salary',startBal:10.337,endBal:10.139,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 79.768, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "note": ""}, "Flat": {"v": 23.95, "note": ""}, "Debt": {"v": 2.681, "note": ""}, "Noted": {"v": 13, "note": "Застава на витрати на бенкетний зал + Вечеря"}, "Food": {"v": 15, "note": ""}, "Unexplained": {"v": 16.835, "note": ""}}},
-  '2025-12':{closed:true,milestone:'',startBal:10.139,endBal:46.928,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 115.538, "note": ""}},sav:{},exp:{"KSE": {"v": 8, "note": ""}, "Flat": {"v": 25.22, "note": ""}, "Debt": {"v": 2.681, "note": ""}, "Noted": {"v": 10, "note": "Whoop"}, "Food": {"v": 16, "note": ""}, "Unexplained": {"v": 16.848, "note": ""}}},
-  '2026-01':{closed:true,milestone:'Side Project',startBal:46.928,endBal:20.068,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 40.896, "note": ""}},sav:{},exp:{"Flat": {"v": 25.7, "note": ""}, "Debt": {"v": 2.681, "note": ""}, "Noted": {"v": 14.4, "note": "Вітаміни\nКвитки укр залізниця\nПодарунок Ко\nВитрата на курси для Юкон"}, "Auto": {"v": 2, "note": ""}, "Food": {"v": 13.451, "note": ""}, "Unexplained": {"v": 9.524, "note": ""}}},
-  '2026-02':{closed:true,milestone:'',startBal:20.068,endBal:58.951,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 72.069, "note": ""}, "Аналітика": {"v": 40, "note": ""}},sav:{},exp:{"Flat": {"v": 25.3, "note": ""}, "Debt": {"v": 2.681, "note": ""}, "Noted": {"v": 40.1, "note": "датакемп\nкартинг\nселяям\nмамаманаа\nалкоголь\nплата за лікарняний\nблагодійність"}, "Auto": {"v": 7.4, "note": ""}, "Food": {"v": 8, "note": ""}, "Unexplained": {"v": 10.296, "note": ""}}},
-  '2026-03':{closed:false,milestone:'',startBal:58.951,endBal:105.47,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 76.3, "note": ""}, "Аналітика": {"v": 40, "note": ""}},sav:{},exp:{"Flat": {"v": 23.5, "note": ""}, "Debt": {"v": 2.681, "note": ""}, "Noted": {"v": 17.2, "note": "Штрафи резерв +"}, "Auto": {"v": 1.5, "note": ""}, "Unexplained": {"v": 33.5, "note": ""}}},
-  '2026-04':{closed:false,milestone:'',startBal:105.47,endBal:163.089,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 76.3, "note": ""}, "Аналітика": {"v": 40, "note": ""}},sav:{},exp:{"Flat": {"v": 23.5, "note": ""}, "Debt": {"v": 1.681, "note": ""}, "Unexplained": {"v": 33.5, "note": ""}}},
-  '2026-05':{closed:false,milestone:'',startBal:163.089,endBal:182.389,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 76.3, "note": ""}},sav:{},exp:{"Flat": {"v": 23.5, "note": ""}, "Unexplained": {"v": 33.5, "note": ""}}},
+  '2024-01':{closed:true,milestone:'',startBal:-2.399,endBal:-2.399,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 26.503, "fc": 0, "note": ""}},sav:{},exp:{"Flat": {"v": 7, "fc": 0, "note": ""}, "Food": {"v": 13.88, "fc": 0, "note": ""}, "Unexplained": {"v": 5.623, "fc": 0, "note": ""}}},
+  '2024-02':{closed:true,milestone:'New Salary',startBal:-2.399,endBal:-2.399,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 37.425, "fc": 0, "note": ""}},sav:{},exp:{"Flat": {"v": 7, "fc": 0, "note": ""}, "Food": {"v": 15.343, "fc": 0, "note": ""}, "Unexplained": {"v": 15.082, "fc": 0, "note": ""}}},
+  '2024-03':{closed:true,milestone:'',startBal:-2.399,endBal:-2.399,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 34.667, "fc": 0, "note": ""}},sav:{},exp:{"Flat": {"v": 7, "fc": 0, "note": ""}, "Food": {"v": 19.744, "fc": 0, "note": ""}, "Unexplained": {"v": 7.923, "fc": 0, "note": ""}}},
+  '2024-04':{closed:true,milestone:'',startBal:-2.399,endBal:-2.399,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 35.001, "fc": 0, "note": ""}},sav:{},exp:{"Flat": {"v": 7, "fc": 0, "note": ""}, "Food": {"v": 20.262, "fc": 0, "note": ""}, "Unexplained": {"v": 7.739, "fc": 0, "note": ""}}},
+  '2024-05':{closed:true,milestone:'',startBal:-2.399,endBal:-31.525,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 33.41, "fc": 0, "note": ""}},sav:{},exp:{"Flat": {"v": 7, "fc": 0, "note": ""}, "Noted": {"v": 29.126, "fc": 0, "note": "iPhone14"}, "Food": {"v": 11.706, "fc": 0, "note": ""}, "Unexplained": {"v": 14.704, "fc": 0, "note": ""}}},
+  '2024-06':{closed:true,milestone:'',startBal:-31.525,endBal:-31.525,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 38.536, "fc": 0, "note": ""}},sav:{},exp:{"Flat": {"v": 7, "fc": 0, "note": ""}, "Food": {"v": 14.038, "fc": 0, "note": ""}, "Unexplained": {"v": 17.498, "fc": 0, "note": ""}}},
+  '2024-07':{closed:true,milestone:'',startBal:-31.525,endBal:-31.525,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 32.295, "fc": 0, "note": ""}, "Допомога від батьків": {"v": 8.226, "fc": 0, "note": ""}},sav:{},exp:{"Flat": {"v": 7, "fc": 0, "note": ""}, "Food": {"v": 18.025, "fc": 0, "note": ""}, "Unexplained": {"v": 15.497, "fc": 0, "note": ""}}},
+  '2024-08':{closed:true,milestone:'',startBal:-31.525,endBal:-19.144,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 39.004, "fc": 0, "note": ""}, "Допомога від батьків": {"v": 18, "fc": 0, "note": ""}},sav:{},exp:{"Flat": {"v": 7, "fc": 0, "note": ""}, "Noted": {"v": 3.5, "fc": 0, "note": "Air Fryer"}, "Food": {"v": 16.143, "fc": 0, "note": ""}, "Unexplained": {"v": 17.98, "fc": 0, "note": ""}}},
+  '2024-09':{closed:true,milestone:'KSE - виплата кредиту',startBal:-19.144,endBal:-55.445,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 35.598, "fc": 0, "note": ""}, "Допомога від батьків": {"v": 11.1, "fc": 0, "note": ""}},sav:{},exp:{"KSE": {"v": 50, "fc": 0, "note": ""}, "Flat": {"v": 7, "fc": 0, "note": ""}, "Food": {"v": 16.143, "fc": 0, "note": ""}, "Unexplained": {"v": 9.857, "fc": 0, "note": ""}}},
+  '2024-10':{closed:true,milestone:'New Salary',startBal:-55.445,endBal:-26.863,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 48.918, "fc": 0, "note": ""}, "Допомога від батьків": {"v": 10, "fc": 0, "note": ""}},sav:{},exp:{"Flat": {"v": 7.5, "fc": 0, "note": ""}, "Food": {"v": 16.143, "fc": 0, "note": ""}, "Unexplained": {"v": 6.693, "fc": 0, "note": ""}}},
+  '2024-11':{closed:true,milestone:'',startBal:-26.863,endBal:-13.536,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 99.532, "fc": 0, "note": ""}, "Допомога від батьків": {"v": 28.452, "fc": 0, "note": ""}},sav:{},exp:{"Flat": {"v": 7.5, "fc": 0, "note": ""}, "Food": {"v": 16.143, "fc": 0, "note": ""}, "Unexplained": {"v": 91.015, "fc": 0, "note": ""}}},
+  '2024-12':{closed:true,milestone:'',startBal:-13.536,endBal:40.048,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 58.747, "fc": 0, "note": ""}, "Допомога від батьків": {"v": 2, "fc": 0, "note": ""}},sav:{},exp:{"Flat": {"v": 7.5, "fc": 0, "note": ""}, "Unexplained": {"v": 0.337, "fc": 0, "note": ""}}},
+  '2025-01':{closed:true,milestone:'',startBal:40.048,endBal:-31.92,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 12.613, "fc": 0, "note": ""}, "Допомога від батьків": {"v": 8.27, "fc": 0, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "fc": 0, "note": ""}, "Flat": {"v": 7.5, "fc": 0, "note": ""}, "Noted": {"v": 33, "fc": 0, "note": "Карпати + Сумка Бершкін"}, "Food": {"v": 28, "fc": 0, "note": ""}, "Unexplained": {"v": 15.851, "fc": 0, "note": ""}}},
+  '2025-02':{closed:true,milestone:'New Salary',startBal:-31.92,endBal:-10.991,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 60, "fc": 0, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "fc": 0, "note": ""}, "Flat": {"v": 7.5, "fc": 0, "note": ""}, "Noted": {"v": 20, "fc": 0, "note": "Стоматолог + Монітор"}, "Food": {"v": 17, "fc": 0, "note": ""}, "Unexplained": {"v": 13.929, "fc": 0, "note": ""}}},
+  '2025-03':{closed:true,milestone:'',startBal:-10.991,endBal:-9.86,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 66.5, "fc": 0, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "fc": 0, "note": ""}, "Flat": {"v": 7.5, "fc": 0, "note": ""}, "Noted": {"v": 8.5, "fc": 0, "note": "Заняття з Євгенією Здоровя"}, "Food": {"v": 33, "fc": 0, "note": ""}, "Unexplained": {"v": 7.869, "fc": 0, "note": ""}}},
+  '2025-04':{closed:true,milestone:'',startBal:-9.86,endBal:21.765,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 75.167, "fc": 0, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "fc": 0, "note": ""}, "Flat": {"v": 7.5, "fc": 0, "note": ""}, "Food": {"v": 19, "fc": 0, "note": ""}, "Unexplained": {"v": 8.542, "fc": 0, "note": ""}}},
+  '2025-05':{closed:true,milestone:'New flat',startBal:21.765,endBal:-21.413,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 69.921, "fc": 0, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "fc": 0, "note": ""}, "Flat": {"v": 28.5, "fc": 0, "note": ""}, "Noted": {"v": 10, "fc": 0, "note": "Поїздка до львова готель Ференс"}, "Food": {"v": 34, "fc": 0, "note": ""}, "Unexplained": {"v": 32.099, "fc": 0, "note": ""}}},
+  '2025-06':{closed:true,milestone:'',startBal:-21.413,endBal:-5.501,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 65.567, "fc": 0, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "fc": 0, "note": ""}, "Flat": {"v": 21.37, "fc": 0, "note": ""}, "Debt": {"v": 1.001, "fc": 0, "note": ""}, "Food": {"v": 19, "fc": 0, "note": ""}, "Unexplained": {"v": 0.216, "fc": 0, "note": ""}}},
+  '2025-07':{closed:true,milestone:'Help from Father',startBal:-5.501,endBal:50.014,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 70.321, "fc": 0, "note": ""}, "Допомога від батьків": {"v": 50, "fc": 0, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "fc": 0, "note": ""}, "Flat": {"v": 22.73, "fc": 0, "note": ""}, "Debt": {"v": 1.001, "fc": 0, "note": ""}, "Food": {"v": 15, "fc": 0, "note": ""}, "Unexplained": {"v": 17.575, "fc": 0, "note": ""}}},
+  '2025-08':{closed:true,milestone:'',startBal:50.014,endBal:57.709,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 75.255, "fc": 0, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "fc": 0, "note": ""}, "Flat": {"v": 23.74, "fc": 0, "note": ""}, "Debt": {"v": 2.681, "fc": 0, "note": ""}, "Food": {"v": 18, "fc": 0, "note": ""}, "Unexplained": {"v": 14.639, "fc": 0, "note": ""}}},
+  '2025-09':{closed:true,milestone:'',startBal:57.709,endBal:63.584,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 85.19, "fc": 0, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "fc": 0, "note": ""}, "Flat": {"v": 23.445, "fc": 0, "note": ""}, "Debt": {"v": 2.681, "fc": 0, "note": ""}, "Noted": {"v": 14, "fc": 0, "note": "Одяг та витрати на весілля Богданчика"}, "Food": {"v": 18, "fc": 0, "note": ""}, "Unexplained": {"v": 12.689, "fc": 0, "note": ""}}},
+  '2025-10':{closed:true,milestone:'Car',startBal:63.584,endBal:10.337,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 57.262, "fc": 0, "note": ""}, "Допомога від батьків": {"v": 20.75, "fc": 0, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "fc": 0, "note": ""}, "Flat": {"v": 23.547, "fc": 0, "note": ""}, "Debt": {"v": 2.681, "fc": 0, "note": ""}, "Noted": {"v": 63.464, "fc": 0, "note": "Витрати з покупкою машини"}, "Food": {"v": 17, "fc": 0, "note": ""}, "Unexplained": {"v": 16.066, "fc": 0, "note": ""}}},
+  '2025-11':{closed:true,milestone:'New Salary',startBal:10.337,endBal:10.139,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 79.768, "fc": 0, "note": ""}},sav:{},exp:{"KSE": {"v": 8.5, "fc": 0, "note": ""}, "Flat": {"v": 23.95, "fc": 0, "note": ""}, "Debt": {"v": 2.681, "fc": 0, "note": ""}, "Noted": {"v": 13, "fc": 0, "note": "Застава на витрати на бенкетний зал + Вечеря"}, "Food": {"v": 15, "fc": 0, "note": ""}, "Unexplained": {"v": 16.835, "fc": 0, "note": ""}}},
+  '2025-12':{closed:true,milestone:'',startBal:10.139,endBal:46.928,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 115.538, "fc": 0, "note": ""}},sav:{},exp:{"KSE": {"v": 8, "fc": 0, "note": ""}, "Flat": {"v": 25.22, "fc": 0, "note": ""}, "Debt": {"v": 2.681, "fc": 0, "note": ""}, "Noted": {"v": 10, "fc": 0, "note": "Whoop"}, "Food": {"v": 16, "fc": 0, "note": ""}, "Unexplained": {"v": 16.848, "fc": 0, "note": ""}}},
+  '2026-01':{closed:true,milestone:'Side Project',startBal:46.928,endBal:20.068,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 40.896, "fc": 0, "note": ""}},sav:{},exp:{"Flat": {"v": 25.7, "fc": 0, "note": ""}, "Debt": {"v": 2.681, "fc": 0, "note": ""}, "Noted": {"v": 14.4, "fc": 0, "note": "Вітаміни + Квитки укр залізниця + Подарунок Ко + Витрата на курси для Юкон"}, "Auto": {"v": 2, "fc": 0, "note": ""}, "Food": {"v": 13.451, "fc": 0, "note": ""}, "Unexplained": {"v": 9.524, "fc": 0, "note": ""}}},
+  '2026-02':{closed:true,milestone:'',startBal:20.068,endBal:58.951,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 72.069, "fc": 0, "note": ""}, "Аналітика": {"v": 40, "fc": 0, "note": ""}},sav:{},exp:{"Flat": {"v": 25.3, "fc": 0, "note": ""}, "Debt": {"v": 2.681, "fc": 0, "note": ""}, "Noted": {"v": 40.1, "fc": 0, "note": "датакемп + картинг + селяям + мамаманаа + алкоголь + плата за лікарняний + благодійність"}, "Auto": {"v": 7.4, "fc": 0, "note": ""}, "Food": {"v": 8, "fc": 0, "note": ""}, "Unexplained": {"v": 10.296, "fc": 0, "note": ""}}},
+  '2026-03':{closed:false,milestone:'',startBal:58.951,endBal:105.47,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 76.3, "fc": 0, "note": ""}, "Аналітика": {"v": 40, "fc": 0, "note": ""}},sav:{},exp:{"Flat": {"v": 23.5, "fc": 0, "note": ""}, "Debt": {"v": 2.681, "fc": 0, "note": ""}, "Noted": {"v": 17.2, "fc": 0, "note": "Штрафи резерв +"}, "Auto": {"v": 1.5, "fc": 0, "note": ""}, "Unexplained": {"v": 33.5, "fc": 0, "note": ""}}},
+  '2026-04':{closed:false,milestone:'',startBal:105.47,endBal:163.089,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 76.3, "fc": 0, "note": ""}, "Аналітика": {"v": 40, "fc": 0, "note": ""}},sav:{},exp:{"Flat": {"v": 23.5, "fc": 0, "note": ""}, "Debt": {"v": 1.681, "fc": 0, "note": ""}, "Unexplained": {"v": 33.5, "fc": 0, "note": ""}}},
+  '2026-05':{closed:false,milestone:'',startBal:163.089,endBal:182.389,fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{"Kernel": {"v": 76.3, "fc": 0, "note": ""}},sav:{},exp:{"Flat": {"v": 23.5, "fc": 0, "note": ""}, "Unexplained": {"v": 33.5, "fc": 0, "note": ""}}},
 };
 
 const BAL_SEED=[
@@ -698,22 +660,6 @@ const BAL_SEED=[
   {"date": "2026-02-28", "mono": 0.0, "monoJar": 20.0, "privat": -3.73, "credi": 1.631, "cash": 0.05, "apt": 21.0, "envelope": 20.0, "total": 58.951},
   {"date": "2026-03-10", "mono": 0.014, "monoJar": 20.0, "privat": -7.95, "credi": 19.919, "cash": 0.35, "apt": 21.0, "envelope": 20.0, "total": 73.333},
 ];
-
-// ── SEED DATA ──
-
-
-
-
-const DEFAULT_ACCOUNTS=[
-  {id:'mono',     label:'Monobank',        cat:'cash'},
-  {id:'monoJar',  label:'Mono — Банка',    cat:'savings'},
-  {id:'privat',   label:'PrivatBank',      cat:'cash'},
-  {id:'credi',    label:'Crédit Agricole', cat:'cash'},
-  {id:'cash',     label:'Готівка',         cat:'cash'},
-  {id:'apt',      label:'В квартирі',      cat:'prepaid'},
-  {id:'envelope', label:'Конверт',         cat:'prepaid'},
-];
-const ACC_CATS=['cash','savings','prepaid'];
 const ACC_CAT_LABELS={cash:'Cash',savings:'Savings',prepaid:'Prepaid'};
 const ACC_CAT_COLORS={cash:'var(--blue)',savings:'var(--green)',prepaid:'var(--purple)'};
 const ACC_CAT_BG={cash:'var(--bbg)',savings:'var(--gbg)',prepaid:'var(--pbg)'};
@@ -830,18 +776,20 @@ async function loadSettings(){
 async function seed(){
   ss('busy','checking…');
   try{
+    // always rewrite months to ensure data integrity (endBal/startBal chain)
     const s=await getDoc(mRef('2025-01'));
     if(!s.exists()){
       ss('busy','uploading history…');
       for(const[k,d]of Object.entries(MONTHS_SEED)) await setDoc(mRef(k),d);
       await setDoc(sRef(),{...DEFAULT_CATS,accounts:DEFAULT_ACCOUNTS});
     } else {
-      // check if old format (array or numeric keys) — rewrite all if so
-      const existing=s.data();
-      const incKeys=existing.inc?Object.keys(existing.inc):[];
-      const isOldFormat=Array.isArray(existing.inc)||incKeys.some(k=>!isNaN(k));
-      if(isOldFormat){
-        ss('busy','fixing data format…');
+      // check if needs migration (old format or missing fc fields)
+      const d=s.data();
+      const needsMigration=Array.isArray(d.inc)||
+        (d.inc&&Object.keys(d.inc).some(k=>!isNaN(k)))||
+        (d.inc&&Object.values(d.inc).some(r=>r.fc===undefined));
+      if(needsMigration){
+        ss('busy','migrating data…');
         for(const[k,d]of Object.entries(MONTHS_SEED)) await setDoc(mRef(k),d);
         await setDoc(sRef(),{...DEFAULT_CATS,accounts:DEFAULT_ACCOUNTS});
       }
@@ -1508,10 +1456,9 @@ window.goPage=async name=>{
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
   document.getElementById('page-'+name).classList.add('on');
-  const idx={month:0,spend:1,balance:2,history:3}[name];
-  document.querySelectorAll('.ntab')[idx].classList.add('on');
+  const idx={month:0,balance:1,history:2}[name];
+  if(idx!==undefined) document.querySelectorAll('.ntab')[idx].classList.add('on');
   if(name==='month') await renderMonth();
-  if(name==='spend'){await loadMonth(curKey);renderSpend();}
   if(name==='balance') renderBalancePage();
   if(name==='history') await renderHistory();
 };
