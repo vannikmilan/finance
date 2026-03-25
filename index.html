@@ -890,16 +890,15 @@ function renderLines(zone){
     const entry=vals[name]||{v:'',fc:'',note:''};
     const actRaw=entry.v!==''&&entry.v!==null?parseFloat(entry.v):null;
     const fcRaw=entry.fc!==''&&entry.fc!==null?parseFloat(entry.fc):null;
-    const actVal=actRaw!==null?Math.abs(actRaw).toFixed(1):'';
-    const fcVal=fcRaw!==null?Math.abs(fcRaw).toFixed(1):'';
+    const actVal=actRaw!==null?actRaw.toFixed(1):'';
+    const fcVal=fcRaw!==null?fcRaw.toFixed(1):'';
 
     const w=document.createElement('div');
     if(lk){
       // closed: single value, no forecast
       w.innerHTML=`<div class="fa-row">
         <span class="fa-name">${esc(name)}</span>
-        <input class="fa-inp ac" type="number" step="0.1" placeholder="0.0"
-          inputmode="decimal"
+        <input class="fa-inp ac" type="text" inputmode="decimal" placeholder="0.0"
           value="${actVal}" disabled/>
       </div>
       <div class="note-wrap"><input class="inote" type="text"
@@ -909,12 +908,10 @@ function renderLines(zone){
       // open: forecast + actual side by side
       w.innerHTML=`<div class="fa-row">
         <span class="fa-name">${esc(name)}</span>
-        <input class="fa-inp fc" type="number" step="0.1" placeholder="—"
-          inputmode="decimal"
+        <input class="fa-inp fc" type="text" inputmode="decimal" placeholder="—"
           value="${fcVal}"
           oninput="setPlan('${zone}','${esc(name)}',this.value)"/>
-        <input class="fa-inp ac" type="number" step="0.1" placeholder="0.0"
-          inputmode="decimal"
+        <input class="fa-inp ac" type="text" inputmode="decimal" placeholder="0.0"
           value="${actVal}"
           oninput="setVal('${zone}','${esc(name)}',this.value)"/>
       </div>
@@ -1389,7 +1386,7 @@ window.onBalSel=()=>{
         id="cat-pill-${acc.id}">${ACC_CAT_LABELS[cat]}</button>
       <span class="bal-prev-val">${v1!==null?v1.toFixed(2):''}</span>
       <span class="bal-prev-val t1">${v2!==null?v2.toFixed(2):''}</span>
-      <input type="number" step="0.01" class="bal-inp" id="bv-${acc.id}"
+      <input type="text" inputmode="decimal" class="bal-inp" id="bv-${acc.id}"
         inputmode="decimal"
         placeholder="0.0" value="${cv!==''?Number(cv).toFixed(1):''}" oninput="calcBalTotal()"/>
     </div>`;
