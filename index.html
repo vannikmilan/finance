@@ -72,7 +72,8 @@ input.inote{width:100%;background:none;border:none;padding:0 0 0 4px;font-size:1
 input.inote:focus{outline:none;color:var(--t2)}
 input:disabled{opacity:.5}
 .note-wrap{padding:1px 14px 8px}
-.fa-inp{width:76px;text-align:right;font-size:16px;font-family:'SF Mono',monospace;font-variant-numeric:tabular-nums}
+.inp-wrap{display:flex;align-items:center;gap:3px}
+.fa-inp{width:70px;text-align:right;font-size:16px;font-family:'SF Mono',monospace;font-variant-numeric:tabular-nums}
 .fa-inp.fc{background:none;border:1px solid transparent;color:var(--t3)}
 .fa-inp.fc:focus{background:var(--s2);border-color:var(--b);color:var(--t)}
 .fa-inp.ac{background:var(--s2);border:1px solid var(--b)}
@@ -894,24 +895,23 @@ function renderLines(zone){
     const fcVal=fcRaw!==null?fcRaw.toFixed(1):'';
 
     const w=document.createElement('div');
+    const safeId=zone+'_'+name.replace(/[^a-zA-Z0-9]/g,'_');
     if(lk){
-      // closed: single value, no forecast
       w.innerHTML=`<div class="fa-row">
         <span class="fa-name">${esc(name)}</span>
-        <input class="fa-inp ac" type="text" inputmode="decimal" placeholder="0.0"
+        <input class="fa-inp ac" type="text" inputmode="numeric" placeholder="0.0"
           value="${actVal}" disabled/>
       </div>
       <div class="note-wrap"><input class="inote" type="text"
         inputmode="text"
         value="${esc(entry.note||'')}" placeholder="note…" disabled/></div>`;
     } else {
-      // open: forecast + actual side by side
       w.innerHTML=`<div class="fa-row">
         <span class="fa-name">${esc(name)}</span>
-        <input class="fa-inp fc" type="text" inputmode="decimal" placeholder="—"
+        <input class="fa-inp fc" type="text" inputmode="numeric" placeholder="—"
           value="${fcVal}"
           oninput="setPlan('${zone}','${esc(name)}',this.value)"/>
-        <input class="fa-inp ac" type="text" inputmode="decimal" placeholder="0.0"
+        <input class="fa-inp ac" type="text" inputmode="numeric" placeholder="0.0"
           value="${actVal}"
           oninput="setVal('${zone}','${esc(name)}',this.value)"/>
       </div>
@@ -1147,8 +1147,15 @@ window.tog=id=>{
   b.style.display=isOpen?'none':'block';
   c.className='chev'+(isOpen?'':' open');
 };
+window.toggleSign=function(inputId){
+  const el=document.getElementById(inputId);
+  if(!el) return;
+  const v=parseFloat(el.value);
+  if(isNaN(v)||v===0) return;
+  el.value=(-v).toFixed(1);
+  el.dispatchEvent(new Event('input',{bubbles:true}));
+};
 window.setVal=(zone,name,v)=>{
-  const d=mCache[curKey];
   if(!d[zone][name]) d[zone][name]={v:'',fc:'',note:''};
   d[zone][name].v=v;
   recalc();queueSave();
@@ -1384,10 +1391,9 @@ window.onBalSel=()=>{
       <button class="cat-pill" onclick="cycleAcctCat(${ai})"
         style="background:${bgCol};color:${txtCol}"
         id="cat-pill-${acc.id}">${ACC_CAT_LABELS[cat]}</button>
-      <span class="bal-prev-val">${v1!==null?v1.toFixed(2):''}</span>
-      <span class="bal-prev-val t1">${v2!==null?v2.toFixed(2):''}</span>
-      <input type="text" inputmode="decimal" class="bal-inp" id="bv-${acc.id}"
-        inputmode="decimal"
+      <span class="bal-prev-val">${v1!==null?v1.toFixed(1):''}</span>
+      <span class="bal-prev-val t1">${v2!==null?v2.toFixed(1):''}</span>
+      <input type="text" inputmode="numeric" class="bal-inp" id="bv-${acc.id}"
         placeholder="0.0" value="${cv!==''?Number(cv).toFixed(1):''}" oninput="calcBalTotal()"/>
     </div>`;
     container.appendChild(div);
