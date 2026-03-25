@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="Budget"/>
 <title>Budget</title>
@@ -65,13 +65,17 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .row:last-child{border-bottom:none}
 .row-lbl{flex:1;font-size:13px;color:var(--t2)}
 
-input[type=text],input[type=number]{background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:6px 10px;font-size:13px;color:var(--t);outline:none;-webkit-appearance:none}
+input[type=text],input[type=number]{background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:6px 10px;font-size:16px;color:var(--t);outline:none;-webkit-appearance:none}
 input:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--bbg)}
-input.ival{width:100px;text-align:right;font-family:'SF Mono',monospace;font-variant-numeric:tabular-nums}
-input.inote{width:100%;background:none;border:none;padding:0 0 0 4px;font-size:11px;color:var(--t3);font-style:italic}
+input.ival{width:100px;text-align:right;font-family:'SF Mono',monospace;font-variant-numeric:tabular-nums;font-size:16px}
+input.inote{width:100%;background:none;border:none;padding:0 0 0 4px;font-size:15px;color:var(--t3);font-style:italic}
 input.inote:focus{outline:none;color:var(--t2)}
 input:disabled{opacity:.5}
 .note-wrap{padding:1px 14px 8px}
+.fa-inp{width:76px;text-align:right;font-size:16px;font-family:'SF Mono',monospace;font-variant-numeric:tabular-nums}
+.fa-inp.fc{background:none;border:1px solid transparent;color:var(--t3)}
+.fa-inp.fc:focus{background:var(--s2);border-color:var(--b);color:var(--t)}
+.fa-inp.ac{background:var(--s2);border:1px solid var(--b)}
 
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .mnav{display:flex;align-items:center;gap:6px}
@@ -343,19 +347,19 @@ input:disabled{opacity:.5}
       <!-- unexplained rows — only on open months -->
       <div id="unexpl-open-rows" style="display:none">
         <div style="height:1px;background:var(--b2);margin:0 14px"></div>
-        <div class="fa-row" style="padding:9px 14px">
-          <span class="fa-name" style="color:var(--t3);font-size:12px">
-            Actual unexplained
-            <span style="font-size:10px;display:block;color:var(--t3);font-style:italic">opening + actual income − actual exp − balance</span>
-          </span>
-          <span id="unexpl-act-val" style="font-size:14px;font-weight:600;font-family:'SF Mono',monospace;min-width:76px;text-align:right">—</span>
+        <!-- summary row matching Forecast / Actual column layout -->
+        <div class="fa-row" style="padding:8px 14px;border-bottom:none;background:var(--s2)">
+          <span class="fa-name" style="color:var(--t3);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em">Summary</span>
+          <span style="width:76px;text-align:right;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--blue)">FREE TO SPEND</span>
+          <span style="width:76px;text-align:right;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--amber)">ACTUAL UNEXL</span>
         </div>
         <div class="fa-row" style="padding:9px 14px;border-bottom:none">
-          <span class="fa-name" style="color:var(--t3);font-size:12px">
-            Forecast remaining
-            <span style="font-size:10px;display:block;color:var(--t3);font-style:italic">opening + total income − savings − fixed exp − balance</span>
+          <span class="fa-name" style="color:var(--t3);font-size:11px;font-style:italic">
+            cash open + income − savings − exp − unexpl
+            <span style="display:block;font-size:10px;color:var(--t3)">vs opening + act income − act exp − balance</span>
           </span>
-          <span id="unexpl-fc-val" style="font-size:14px;font-weight:600;font-family:'SF Mono',monospace;min-width:76px;text-align:right">—</span>
+          <span id="unexpl-fc-val" style="font-size:14px;font-weight:600;font-family:'SF Mono',monospace;width:76px;text-align:right">—</span>
+          <span id="unexpl-act-val" style="font-size:14px;font-weight:600;font-family:'SF Mono',monospace;width:76px;text-align:right">—</span>
         </div>
       </div>
     </div>
@@ -372,7 +376,7 @@ input:disabled{opacity:.5}
     </div>
     <div class="card-body" id="b-ms" style="display:none">
       <div class="row">
-        <input type="text" id="ms-inp" placeholder="e.g. New salary, Car…" style="flex:1" oninput="setField('milestone',this.value)"/>
+        <input type="text" id="ms-inp" placeholder="e.g. New salary, Car…" style="flex:1" inputmode="text" oninput="setField('milestone',this.value)"/>
       </div>
     </div>
   </div>
@@ -884,8 +888,10 @@ function renderLines(zone){
 
   visibleCats.forEach(name=>{
     const entry=vals[name]||{v:'',fc:'',note:''};
-    const actVal=entry.v!==''&&entry.v!==null?Math.abs(parseFloat(entry.v)||0):'';
-    const fcVal=entry.fc!==''&&entry.fc!==null?Math.abs(parseFloat(entry.fc)||0):'';
+    const actRaw=entry.v!==''&&entry.v!==null?parseFloat(entry.v):null;
+    const fcRaw=entry.fc!==''&&entry.fc!==null?parseFloat(entry.fc):null;
+    const actVal=actRaw!==null?Math.abs(actRaw).toFixed(1):'';
+    const fcVal=fcRaw!==null?Math.abs(fcRaw).toFixed(1):'';
 
     const w=document.createElement('div');
     if(lk){
@@ -893,22 +899,27 @@ function renderLines(zone){
       w.innerHTML=`<div class="fa-row">
         <span class="fa-name">${esc(name)}</span>
         <input class="fa-inp ac" type="number" step="0.1" placeholder="0.0"
+          inputmode="decimal"
           value="${actVal}" disabled/>
       </div>
       <div class="note-wrap"><input class="inote" type="text"
+        inputmode="text"
         value="${esc(entry.note||'')}" placeholder="note…" disabled/></div>`;
     } else {
       // open: forecast + actual side by side
       w.innerHTML=`<div class="fa-row">
         <span class="fa-name">${esc(name)}</span>
         <input class="fa-inp fc" type="number" step="0.1" placeholder="—"
+          inputmode="decimal"
           value="${fcVal}"
           oninput="setPlan('${zone}','${esc(name)}',this.value)"/>
         <input class="fa-inp ac" type="number" step="0.1" placeholder="0.0"
+          inputmode="decimal"
           value="${actVal}"
           oninput="setVal('${zone}','${esc(name)}',this.value)"/>
       </div>
       <div class="note-wrap"><input class="inote" type="text"
+        inputmode="text"
         value="${esc(entry.note||'')}" placeholder="note…"
         oninput="setNote('${zone}','${esc(name)}',this.value)"/></div>`;
     }
@@ -924,7 +935,8 @@ function recalc(){
   const fcInc=sumFc(data.inc);
   const fcSav=sumFc(data.sav);
   const fcExp=sumFc(data.exp);
-  const start=data.startBal??0;
+  // use live start bal from prev month's est closing if available (not saved, just display)
+  const start=data._liveStartBal??data.startBal??0;
 
   // total = actual + forecast always
   const totalInc=inc+fcInc;
@@ -1012,48 +1024,69 @@ function recalc(){
     ne.className='bcard-val '+(net>=0?'vpos':'vneg');
     document.getElementById('exp-summary-card').style.display='none';
     document.getElementById('d-close-lbl').textContent='Est. closing';
-    document.getElementById('d-close').textContent=(start+net).toFixed(1);
-    // free to spend uses freeNet (income − savings − expenses)
-    const free=freeNet;
-    const fs=document.getElementById('free-strip');
-    fs.style.display='flex';
-    fs.className='free-strip '+(free>=0?'free-pos':'free-neg');
-    document.getElementById('free-val').textContent=(free>=0?'':'-')+Math.abs(free).toFixed(1)+' K';
-    if(isCur(curKey)){
-      document.getElementById('fc-strip').style.display='flex';
-      const dl=dLeft();
-      document.getElementById('fc-days').textContent=dl;
-      document.getElementById('fc-date').textContent=new Date().toLocaleDateString('uk-UA',{day:'numeric',month:'long'});
-      document.getElementById('fc-pd').textContent=dl>0?(free/dl).toFixed(2):'—';
-    } else {document.getElementById('fc-strip').style.display='none';}
+
+    // Est. closing = Live balance + Forecast income − Forecast expenses (most accurate)
+    // Fallback: Opening + Total income − Total expenses
+    const balEntry3=latestBalForMonth(curKey);
+    const liveBal=balEntry3?balEntry3.total:null;
+    const fcOnly_inc=sumFc(data.inc);
+    const fcOnly_exp=sumFc(data.exp);
+    const estClose=liveBal!==null
+      ? liveBal + fcOnly_inc - fcOnly_exp
+      : start + net;
+    document.getElementById('d-close').textContent=estClose.toFixed(1);
+
+    // propagate est closing → next month opening (live, display only — not saved)
+    const nextData=mCache[nk(curKey)];
+    if(nextData&&!nextData.closed){
+      nextData._liveStartBal=estClose; // temp field, not persisted
+    }
 
     // ── UNEXPLAINED ROWS (open month) ──
     const uRows=document.getElementById('unexpl-open-rows');
     uRows.style.display='block';
 
-    const balEntry2=latestBalForMonth(curKey);
     const auEl=document.getElementById('unexpl-act-val');
     const frEl=document.getElementById('unexpl-fc-val');
 
+    // FREE TO SPEND = cash opening + all income − all savings − all expenses − unexplained
+    const openingBalEntry=latestBalForMonth(pk(curKey));
+    const cashAccounts=savedAccounts.filter(a=>(a.cat||'cash')==='cash');
+    const cashOpening=openingBalEntry
+      ? cashAccounts.reduce((s,a)=>s+(openingBalEntry[a.id]||0),0)
+      : start;
+    const balEntry2=latestBalForMonth(curKey);
+    const unexplained=balEntry2?(start+inc-exp-balEntry2.total):0;
+    const freeToSpend=cashOpening+totalInc-totalSav-totalExp-unexplained;
+
+    // update expense card total to show categorised + unexplained
+    if(unexplained>0.05){
+      document.getElementById('t-exp').textContent=(totalExp+unexplained).toFixed(1);
+      if(expFcEl) expFcEl.textContent='('+totalExp.toFixed(1)+'+'+unexplained.toFixed(1)+'unexl)';
+    }
+    frEl.textContent=(freeToSpend>=0?'+':'')+freeToSpend.toFixed(1)+' K';
+    frEl.style.color=freeToSpend>=0?'var(--green)':'var(--red)';
+
+    // sync FREE TO SPEND strip at top with this value
+    const fs=document.getElementById('free-strip');
+    fs.style.display='flex';
+    fs.className='free-strip '+(freeToSpend>=0?'free-pos':'free-neg');
+    document.getElementById('free-val').textContent=(freeToSpend>=0?'':'-')+Math.abs(freeToSpend).toFixed(1)+' K';
+    if(isCur(curKey)){
+      document.getElementById('fc-strip').style.display='flex';
+      const dl=dLeft();
+      document.getElementById('fc-days').textContent=dl;
+      document.getElementById('fc-date').textContent=new Date().toLocaleDateString('uk-UA',{day:'numeric',month:'long'});
+      document.getElementById('fc-pd').textContent=dl>0?(freeToSpend/dl).toFixed(2):'—';
+    } else {document.getElementById('fc-strip').style.display='none';}
+
+    // ACTUAL UNEXPLAINED display
     if(!balEntry2){
-      // no balance entry yet — can't calculate either value meaningfully
       auEl.textContent='— (no balance)';
       auEl.style.color='var(--t3)';
-      frEl.textContent='— (no balance)';
-      frEl.style.color='var(--t3)';
     } else {
-      const curBal=balEntry2.total;
-
-      // Actual unexplained = opening + actual income − actual expenses − current balance
-      const actUnexpl=start+inc-exp-curBal;
-      auEl.textContent=(actUnexpl>=0?'+':'')+actUnexpl.toFixed(1)+' K';
-      auEl.style.color=Math.abs(actUnexpl)<3?'var(--green)':actUnexpl>0?'var(--amber)':'var(--blue)';
-
-      // Forecast remaining = opening + total income − fixed expenses − current balance
-      // NOTE: savings NOT subtracted — savings is separate from spending budget
-      const fcRemain=start+totalInc-totalExp-curBal;
-      frEl.textContent=(fcRemain>=0?'+':'')+fcRemain.toFixed(1)+' K';
-      frEl.style.color=fcRemain>=0?'var(--green)':'var(--red)';
+      auEl.textContent=(unexplained>=0?'+':'')+unexplained.toFixed(1)+' K';
+      auEl.style.color=Math.abs(unexplained)<3?'var(--green)':unexplained>0?'var(--amber)':'var(--blue)';
     }
   }
 
@@ -1094,7 +1127,23 @@ function recalc(){
 
 // ── MONTH ACTIONS ──
 window.prevMonth=async()=>{curKey=pk(curKey);await renderMonth();};
-window.nextMonth=async()=>{curKey=nk(curKey);await renderMonth();};
+window.nextMonth=async()=>{
+  // before navigating forward, compute est closing of current month
+  // and set it as _liveStartBal on next month
+  const curData=mCache[curKey];
+  if(curData&&!curData.closed){
+    const liveBal=latestBalForMonth(curKey);
+    const fcOnly_inc=sumFc(curData.inc);
+    const fcOnly_exp=sumFc(curData.exp);
+    const s=curData._liveStartBal??curData.startBal??0;
+    const inc=sumObj(curData.inc); const exp=sumObj(curData.exp);
+    const net=inc-exp+sumFc(curData.inc)-sumFc(curData.exp);
+    const estClose=liveBal!==null ? liveBal.total+fcOnly_inc-fcOnly_exp : s+net;
+    const nextData=await loadMonth(nk(curKey));
+    if(nextData&&!nextData.closed) nextData._liveStartBal=estClose;
+  }
+  curKey=nk(curKey);await renderMonth();
+};
 window.tog=id=>{
   const b=document.getElementById(id),c=document.getElementById('c-'+id);
   const isOpen=b.style.display==='none'?false:b.style.display==='block'?true:getComputedStyle(b).display!=='none';
@@ -1341,7 +1390,8 @@ window.onBalSel=()=>{
       <span class="bal-prev-val">${v1!==null?v1.toFixed(2):''}</span>
       <span class="bal-prev-val t1">${v2!==null?v2.toFixed(2):''}</span>
       <input type="number" step="0.01" class="bal-inp" id="bv-${acc.id}"
-        placeholder="0.00" value="${cv!==''?Number(cv).toFixed(2):''}" oninput="calcBalTotal()"/>
+        inputmode="decimal"
+        placeholder="0.0" value="${cv!==''?Number(cv).toFixed(1):''}" oninput="calcBalTotal()"/>
     </div>`;
     container.appendChild(div);
   });
@@ -1366,7 +1416,7 @@ window.cycleAcctCat=async(ai)=>{
 window.calcBalTotal=function(){
   let t=0;savedAccounts.forEach(a=>{const e=document.getElementById('bv-'+a.id);if(e)t+=parseFloat(e.value)||0;});
   const el=document.getElementById('bal-total-now');
-  el.textContent=t.toFixed(2)+' K';el.style.color=t>=0?'var(--green)':'var(--red)';
+  el.textContent=t.toFixed(1)+' K';el.style.color=t>=0?'var(--green)':'var(--red)';
 };
 window.saveBalance=async()=>{
   const isNew=selBalDate==='__new__';
@@ -1509,24 +1559,18 @@ window.goMonth=async k=>{curKey=k;goPage('month');};
   ss('ok','offline mode');
   await renderMonth();
 
-  // 2. try Firebase in background — upgrade data if available
+  // 2. try Firebase in background — READ ONLY, never auto-write
   try{
     ss('busy','connecting…');
-    await seed();
     await loadSettings();
-    // overlay Firebase data only if user has edited it (has updatedAt)
+    // load all months from Firebase, prefer Firebase over seed if valid new format
     try{
       const snap=await getDocs(collection(db,'months'));
       snap.forEach(d=>{
         const fd=normalizeMonth(d.data());
-        const seed=MONTHS_SEED[d.id];
-        // only use Firebase data if it's newer than seed AND has valid structure
         const isNewFormat=fd.inc&&typeof fd.inc==='object'&&!Array.isArray(fd.inc)&&
           Object.keys(fd.inc).every(k=>isNaN(k));
-        if(isNewFormat&&fd.updatedAt){
-          mCache[d.id]=fd;
-        }
-        // otherwise keep seed data
+        if(isNewFormat) mCache[d.id]=fd;
       });
     }catch(e){}
     try{
@@ -1534,7 +1578,6 @@ window.goMonth=async k=>{curKey=k;goPage('month');};
       bSnap.forEach(d=>{balCache[d.id]=d.data();});
     }catch(e){}
     ss('ok','connected');
-    // re-render with Firebase data
     await renderMonth();
   }catch(e){
     ss('err','offline — showing local data');
