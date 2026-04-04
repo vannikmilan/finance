@@ -34,6 +34,42 @@
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--t);min-height:100vh;padding:env(safe-area-inset-top,0px) 0 0}
 .mono{font-family:'SF Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
 
+/* ── DESKTOP SHELL ── */
+@media(min-width:600px){
+  body{
+    background:linear-gradient(135deg,#0f0f1a 0%,#1a1025 50%,#0f1a1a 100%);
+    display:flex;align-items:flex-start;justify-content:center;
+    min-height:100vh;padding:32px 0 32px;
+  }
+  #app-shell{
+    width:390px;min-height:calc(100vh - 64px);max-height:calc(100vh - 64px);
+    background:var(--bg);border-radius:44px;
+    box-shadow:0 0 0 10px #1a1a2e,0 40px 80px rgba(0,0,0,.6),0 0 0 11px rgba(255,255,255,.06);
+    overflow:hidden;position:relative;display:flex;flex-direction:column;
+  }
+  /* notch */
+  #app-shell::before{
+    content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:120px;height:34px;background:#1a1a2e;border-radius:0 0 22px 22px;z-index:999;
+  }
+  #app-shell-inner{
+    flex:1;overflow-y:auto;overflow-x:hidden;
+    padding-top:34px;/* space for notch */
+    scrollbar-width:none;
+  }
+  #app-shell-inner::-webkit-scrollbar{display:none;}
+  .sync{border-radius:0}
+  .nav{position:sticky;bottom:0;left:0;right:0;border-radius:0}
+  .wizard{border-radius:0;max-width:100%;margin:0}
+  .page{max-width:100%}
+  .settings-drawer{border-radius:0}
+}
+@media(prefers-color-scheme:light) and (min-width:600px){
+  body{background:linear-gradient(135deg,#e8e8f0 0%,#d8d0e8 50%,#d0e0e8 100%);}
+  #app-shell{box-shadow:0 0 0 10px #c8c0d8,0 40px 80px rgba(0,0,0,.2),0 0 0 11px rgba(255,255,255,.4);}
+  #app-shell::before{background:#c8c0d8;}
+}
+
 .sync{display:flex;align-items:center;justify-content:center;gap:5px;padding:4px;font-size:10px;font-weight:500;letter-spacing:.02em}
 .sync-ok{background:var(--gbg);color:var(--gt)}
 .sync-busy{background:var(--abg);color:var(--at)}
@@ -189,7 +225,9 @@ input:disabled{opacity:.5}
 
 .drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;backdrop-filter:blur(2px)}
 .drawer-overlay.on{display:block}
+@media(min-width:600px){.drawer-overlay{position:absolute;border-radius:44px}}
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(360px,100vw);background:var(--surface);z-index:101;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);overflow-y:auto;padding:0 0 32px}
+@media(min-width:600px){.drawer{position:absolute;top:0;bottom:0;right:0;width:100%;border-radius:44px}}
 .drawer.on{transform:translateX(0)}
 .drawer-hdr{display:flex;align-items:center;padding:16px;border-bottom:1px solid var(--b2);position:sticky;top:0;background:var(--surface);z-index:1}
 .drawer-title{font-size:15px;font-weight:600;flex:1}
@@ -235,9 +273,200 @@ input:disabled{opacity:.5}
 .cat-brow-hdr span:nth-child(2){flex:1;text-align:right}
 .cat-brow-hdr span:nth-child(3){flex:0 0 16px}
 .cat-brow-hdr span:last-child{flex:1;text-align:right}
+/* ── WIZARD ── */
+.wizard{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;flex-direction:column;padding:env(safe-area-inset-top,24px) 24px env(safe-area-inset-bottom,24px);max-width:480px;margin:0 auto;left:0;right:0}
+@media(min-width:600px){.wizard{position:absolute;inset:0;max-width:100%;border-radius:44px}}
+.wizard.hidden{display:none}
+.wiz-progress{display:flex;gap:6px;margin-bottom:32px;padding-top:8px}
+.wiz-dot{flex:1;height:3px;border-radius:2px;background:var(--b);transition:background .3s}
+.wiz-dot.done{background:var(--green)}
+.wiz-dot.active{background:var(--blue)}
+.wiz-step{display:none;flex-direction:column;flex:1}
+.wiz-step.active{display:flex}
+.wiz-tag{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);margin-bottom:12px}
+.wiz-q{font-size:28px;font-weight:700;color:var(--t);line-height:1.2;margin-bottom:8px}
+.wiz-sub{font-size:14px;color:var(--t2);margin-bottom:32px;line-height:1.5}
+.wiz-big-inp{width:100%;font-size:40px;font-weight:700;font-family:'SF Mono',monospace;background:none;border:none;border-bottom:2px solid var(--b);padding:8px 0;color:var(--t);outline:none;text-align:left}
+.wiz-big-inp:focus{border-bottom-color:var(--blue)}
+.wiz-unit{font-size:14px;color:var(--t3);margin-top:8px}
+.wiz-exp-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;overflow-y:auto}
+.wiz-exp-row{display:flex;gap:8px;align-items:center}
+.wiz-exp-name{flex:1;font-size:15px;padding:10px 12px;background:var(--s2);border:1px solid var(--b);border-radius:10px;color:var(--t);outline:none}
+.wiz-exp-name:focus{border-color:var(--blue)}
+.wiz-exp-amt{width:90px;font-size:15px;font-family:'SF Mono',monospace;padding:10px 12px;background:var(--s2);border:1px solid var(--b);border-radius:10px;color:var(--t);outline:none;text-align:right}
+.wiz-exp-amt:focus{border-color:var(--blue)}
+.wiz-exp-del{background:none;border:none;color:var(--t3);font-size:20px;cursor:pointer;padding:4px;flex-shrink:0}
+.wiz-add-btn{display:flex;align-items:center;gap:8px;padding:10px 0;font-size:14px;color:var(--blue);background:none;border:none;cursor:pointer}
+.wiz-nav{display:flex;gap:12px;margin-top:auto;padding-top:24px}
+.wiz-btn-back{flex:1;padding:14px;border-radius:12px;border:1px solid var(--b);background:var(--s2);font-size:15px;font-weight:600;color:var(--t2);cursor:pointer}
+.wiz-btn-next{flex:2;padding:14px;border-radius:12px;border:none;background:var(--blue);font-size:15px;font-weight:600;color:#fff;cursor:pointer}
+.wiz-result{display:none;flex-direction:column;align-items:center;flex:1;text-align:center;overflow-y:auto;padding-bottom:8px}
+.wiz-result.active{display:flex}
+.wiz-result-tag{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--green);margin-bottom:16px}
+.wiz-result-lbl{font-size:16px;color:var(--t2);margin-bottom:8px}
+.wiz-result-num{font-size:64px;font-weight:700;font-family:'SF Mono',monospace;line-height:1}
+.wiz-result-pd{font-size:18px;color:var(--t2);margin-top:12px}
+.wiz-result-pd span{color:var(--t);font-weight:600}
+.wiz-done-btn{margin-top:40px;padding:16px 40px;border-radius:14px;border:none;background:var(--green);font-size:16px;font-weight:600;color:#fff;cursor:pointer}
+/* ── LOGIN ── */
+.login-screen{position:fixed;inset:0;background:var(--bg);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px}
+.login-screen.hidden{display:none}
+.login-logo{font-size:32px;font-weight:700;color:var(--t);margin-bottom:4px;letter-spacing:-.5px}
+.login-tagline{font-size:14px;color:var(--t2);margin-bottom:36px;text-align:center}
+.login-card{width:100%;max-width:340px;background:var(--surface);border:1px solid var(--b);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.login-google{width:100%;padding:12px;border-radius:10px;border:1px solid var(--b);background:var(--surface);color:var(--t);font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px}
+.login-google:active{opacity:.8}
+.login-divider{display:flex;align-items:center;gap:8px;color:var(--t3);font-size:12px}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--b)}
+.login-mode-row{display:flex;gap:6px}
+.login-mode-btn{flex:1;padding:8px;border-radius:8px;border:1px solid var(--b);font-size:13px;font-weight:600;cursor:pointer}
+.login-mode-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.login-mode-btn:not(.active){background:none;color:var(--t2)}
+.login-inp{width:100%;padding:11px 14px;font-size:16px;background:var(--s2);border:1px solid var(--b);border-radius:10px;color:var(--t);outline:none}
+.login-inp:focus{border-color:var(--blue)}
+.login-submit{width:100%;padding:12px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+.login-err{font-size:13px;color:var(--red);text-align:center;min-height:16px}
 </style>
 </head>
 <body>
+
+<!-- ══ LOGIN ══ -->
+<div class="login-screen hidden" id="login-screen">
+  <div class="login-logo">myWorth</div>
+  <div class="login-tagline">Your finances, clearly.</div>
+  <div class="login-card">
+    <button class="login-google" onclick="loginGoogle()">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+    <div class="login-divider"><span>or</span></div>
+    <div class="login-mode-row">
+      <button class="login-mode-btn active" id="btn-signin" onclick="loginSetMode('signin')">Sign in</button>
+      <button class="login-mode-btn" id="btn-signup" onclick="loginSetMode('signup')">Create account</button>
+    </div>
+    <input class="login-inp" id="login-email" type="email" placeholder="Email" autocomplete="email"/>
+    <input class="login-inp" id="login-pass" type="password" placeholder="Password" autocomplete="current-password"/>
+    <div class="login-err" id="login-err"></div>
+    <button class="login-submit" id="login-submit" onclick="loginSubmit()">Sign in</button>
+  </div>
+</div>
+<div id="app-shell">
+<div id="app-shell-inner">
+
+<!-- ══ WIZARD ══ -->
+<div class="wizard hidden" id="wizard">
+  <div class="wiz-progress">
+    <div class="wiz-dot active" id="wdot-0"></div>
+    <div class="wiz-dot" id="wdot-1"></div>
+    <div class="wiz-dot" id="wdot-2"></div>
+    <div class="wiz-dot" id="wdot-3"></div>
+  </div>
+
+  <!-- Step 1: Balance -->
+  <div class="wiz-step active" id="wstep-0">
+    <div class="wiz-tag">Step 1 of 4</div>
+    <div class="wiz-q">What's your current balance?</div>
+    <div class="wiz-sub">Add each account separately — you'll see the full picture.</div>
+    <div class="wiz-exp-list" id="wiz-bal-list"></div>
+    <button class="wiz-add-btn" onclick="wizAddRow('wiz-bal-list','Account','e.g. Monobank')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Add account
+    </button>
+    <div class="wiz-nav">
+      <button class="wiz-btn-next" onclick="wizNext()">Continue →</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Income -->
+  <div class="wiz-step" id="wstep-1">
+    <div class="wiz-tag">Step 2 of 4</div>
+    <div class="wiz-q">Expected income this month?</div>
+    <div class="wiz-sub">Salary, freelance, anything coming in. Add each source separately.</div>
+    <div class="wiz-exp-list" id="wiz-inc-list"></div>
+    <button class="wiz-add-btn" onclick="wizAddRow('wiz-inc-list','Source','e.g. Salary')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Add income source
+    </button>
+    <div class="wiz-nav">
+      <button class="wiz-btn-back" onclick="wizBack()">← Back</button>
+      <button class="wiz-btn-next" onclick="wizNext()">Continue →</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Savings -->
+  <div class="wiz-step" id="wstep-2">
+    <div class="wiz-tag">Step 3 of 4</div>
+    <div class="wiz-q">Any savings goals this month?</div>
+    <div class="wiz-sub">Money you want to set aside — emergency fund, travel, etc. Skip if none.</div>
+    <div class="wiz-exp-list" id="wiz-sav-list"></div>
+    <button class="wiz-add-btn" onclick="wizAddRow('wiz-sav-list','Goal','e.g. Emergency fund')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Add savings goal
+    </button>
+    <div class="wiz-nav">
+      <button class="wiz-btn-back" onclick="wizBack()">← Back</button>
+      <button class="wiz-btn-next" onclick="wizNext()">Continue →</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Expenses -->
+  <div class="wiz-step" id="wstep-3">
+    <div class="wiz-tag">Step 4 of 4</div>
+    <div class="wiz-q">Fixed expenses this month?</div>
+    <div class="wiz-sub">Rent, subscriptions, loan payments. Saved for future months.</div>
+    <div class="wiz-exp-list" id="wiz-exp-list"></div>
+    <button class="wiz-add-btn" onclick="wizAddRow('wiz-exp-list','Expense','e.g. Rent')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Add expense
+    </button>
+    <div class="wiz-nav">
+      <button class="wiz-btn-back" onclick="wizBack()">← Back</button>
+      <button class="wiz-btn-next" onclick="wizFinish()">See result →</button>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="wiz-result" id="wiz-result">
+    <div class="wiz-result-tag">✓ Free to spend</div>
+    <div class="wiz-result-lbl">Until end of month</div>
+    <div class="wiz-result-num" id="wiz-result-num">—</div>
+    <div class="wiz-unit" style="margin-top:4px">K UAH</div>
+    <div class="wiz-result-pd" id="wiz-result-pd"></div>
+    <button class="wiz-done-btn" onclick="wizDone()">Open my budget →</button>
+    <div style="margin-top:36px;text-align:left;width:100%;border-top:1px solid var(--b2);padding-top:24px">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);margin-bottom:16px">How myWorth works</div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(59,130,246,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" width="16" height="16"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--t);margin-bottom:2px">Real balance, not transactions</div>
+            <div style="font-size:13px;color:var(--t2);line-height:1.5">You enter your actual bank balance — not every coffee and taxi. The app figures out what's unexplained by comparing your balance to your known income and expenses.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(34,197,94,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" width="16" height="16"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--t);margin-bottom:2px">Forecast vs actual</div>
+            <div style="font-size:13px;color:var(--t2);line-height:1.5">Each income and expense has two columns — what you expect and what actually happened. Together they give you the full picture for the month.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(245,158,11,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--t);margin-bottom:2px">Close the month, start fresh</div>
+            <div style="font-size:13px;color:var(--t2);line-height:1.5">At month end you close it — locking in your final balance. The next month opens automatically with that balance as its starting point.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="sync sync-ok" id="sync"><div class="sync-dot"></div><span id="sync-txt">connected</span></div>
 
@@ -433,7 +662,13 @@ input:disabled{opacity:.5}
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeSettings()"></div>
 <div class="drawer" id="drawer">
   <div class="drawer-hdr">
-    <span class="drawer-title">Settings — Categories</span>
+    <div style="flex:1;min-width:0">
+      <div class="drawer-title">Settings</div>
+      <div id="settings-user-email" style="font-size:11px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+    </div>
+    <button onclick="authSignOut()" style="font-size:12px;color:var(--red);background:none;border:1px solid var(--rbg);border-radius:8px;padding:4px 10px;cursor:pointer;margin-right:8px;white-space:nowrap">Sign out</button>
+    <button class="drawer-close" onclick="closeSettings()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
     <button class="drawer-close" onclick="closeSettings()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
   </div>
 
@@ -475,12 +710,29 @@ input:disabled{opacity:.5}
   <button onclick="forceReseed()" style="margin:0 16px 16px;width:calc(100% - 32px);padding:10px;font-size:13px;font-weight:500;background:none;color:var(--red);border:1px solid var(--red);border-radius:10px;cursor:pointer;opacity:.7">
     ↺ Force reseed database
   </button>
+  <button onclick="
+    localStorage.removeItem('myworth_wizard_done');
+    closeSettings();
+    wizStep=0;
+    ['wiz-bal-list','wiz-inc-list','wiz-sav-list','wiz-exp-list'].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.innerHTML='';
+    });
+    document.querySelectorAll('.wiz-step').forEach((s,i)=>s.classList.toggle('active',i===0));
+    document.getElementById('wiz-result').style.display='none';
+    wizUpdateDots();
+    wizShow();
+  " style="margin:0 16px 24px;width:calc(100% - 32px);padding:10px;font-size:13px;font-weight:500;background:none;color:var(--t3);border:1px solid var(--b);border-radius:10px;cursor:pointer">
+    ↩ Restart wizard (for testing)
+  </button>
 </div>
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {getFirestore,doc,getDoc,setDoc,collection,getDocs}
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,
+  signOut,onAuthStateChanged,GoogleAuthProvider,signInWithPopup}
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const app=initializeApp({
   apiKey:"AIzaSyC0JnRMnu0Vt_2Th4qXcvUUEo87cnuoTfQ",
@@ -491,9 +743,12 @@ const app=initializeApp({
   appId:"1:221322193594:web:12f1ffe0932c662ac8b083"
 });
 const db=getFirestore(app);
-const mRef=k=>doc(db,'months',k);
-const bRef=k=>doc(db,'balances',k);
-const sRef=()=>doc(db,'settings','categories');
+const auth=getAuth(app);
+let currentUser=null;
+const uid=()=>currentUser?.uid||'anon';
+const mRef=k=>doc(db,'users',uid(),'months',k);
+const bRef=k=>doc(db,'users',uid(),'balances',k);
+const sRef=()=>doc(db,'users',uid(),'settings','categories');
 
 // ── DEFAULT CATEGORIES ──
 const DEFAULT_CATS={
@@ -735,8 +990,7 @@ function normalizeMonth(d){
 }
 
 // ── PRE-POPULATE FROM SEED (works offline/quota exceeded) ──
-Object.entries(MONTHS_SEED).forEach(([k,d])=>{mCache[k]=normalizeMonth(JSON.parse(JSON.stringify(d)));});
-BAL_SEED.forEach(r=>{balCache[r.date]=r;});
+// no seed pre-population — each user starts fresh from Firebase
 
 // ── FIRESTORE ──
 async function loadMonth(k){
@@ -786,39 +1040,18 @@ async function loadSettings(){
 }
 
 async function seed(){
-  ss('busy','checking…');
+  // For new users: just ensure settings document exists
   try{
-    // always rewrite months to ensure data integrity (endBal/startBal chain)
-    const s=await getDoc(mRef('2025-01'));
+    const s=await getDoc(sRef());
     if(!s.exists()){
-      ss('busy','uploading history…');
-      for(const[k,d]of Object.entries(MONTHS_SEED)) await setDoc(mRef(k),d);
       await setDoc(sRef(),{...DEFAULT_CATS,accounts:DEFAULT_ACCOUNTS});
-    } else {
-      // check if needs migration (old format or missing fc fields)
-      const d=s.data();
-      const needsMigration=Array.isArray(d.inc)||
-        (d.inc&&Object.keys(d.inc).some(k=>!isNaN(k)))||
-        (d.inc&&Object.values(d.inc).some(r=>r.fc===undefined))||
-        (d.exp&&d.exp['Unexplained']!==undefined);
-      if(needsMigration){
-        ss('busy','migrating data…');
-        for(const[k,d]of Object.entries(MONTHS_SEED)) await setDoc(mRef(k),d);
-        await setDoc(sRef(),{...DEFAULT_CATS,accounts:DEFAULT_ACCOUNTS});
-      }
     }
-    const bs=await getDoc(bRef('2025-01-31'));
-    if(!bs.exists()){
-      ss('busy','uploading balances…');
-      for(const r of BAL_SEED) await setDoc(bRef(r.date),r);
-    }
-    ss('ok','connected');
-  }catch(e){ss('err','connection failed');console.error(e);}
+  }catch(e){console.error(e);}
 }
 
 async function loadAllBal(){
   try{
-    const s=await getDocs(collection(db,'balances'));
+    const s=await getDocs(collection(db,'users',uid(),'balances'));
     s.forEach(d=>{balCache[d.id]=d.data();});
   }catch(e){console.error(e);}
 }
@@ -899,7 +1132,7 @@ function renderLines(zone){
     if(lk){
       w.innerHTML=`<div class="fa-row">
         <span class="fa-name">${esc(name)}</span>
-        <input class="fa-inp ac" type="text" inputmode="numeric" placeholder="0.0"
+        <input class="fa-inp ac" type="text"  placeholder="0.0"
           value="${actVal}" disabled/>
       </div>
       <div class="note-wrap"><input class="inote" type="text"
@@ -908,10 +1141,10 @@ function renderLines(zone){
     } else {
       w.innerHTML=`<div class="fa-row">
         <span class="fa-name">${esc(name)}</span>
-        <input class="fa-inp fc" type="text" inputmode="numeric" placeholder="—"
+        <input class="fa-inp fc" type="text"  placeholder="—"
           value="${fcVal}"
           oninput="setPlan('${zone}','${esc(name)}',this.value)"/>
-        <input class="fa-inp ac" type="text" inputmode="numeric" placeholder="0.0"
+        <input class="fa-inp ac" type="text"  placeholder="0.0"
           value="${actVal}"
           oninput="setVal('${zone}','${esc(name)}',this.value)"/>
       </div>
@@ -1339,7 +1572,6 @@ function renderBalancePage(){
   const sel=document.getElementById('bal-sel');
   const today=new Date().toISOString().slice(0,10);
   const all={};
-  BAL_SEED.forEach(r=>{all[r.date]=r;});
   Object.entries(balCache).forEach(([k,v])=>{all[k]=v;});
   const sorted=Object.keys(all).sort().reverse();
   sel.innerHTML='';
@@ -1365,7 +1597,6 @@ window.onBalSel=()=>{
   const key=isNew?today:selBalDate;
   document.getElementById('bal-hint').textContent=isNew?'New entry — will be saved':'Editing existing entry';
   const all={};
-  BAL_SEED.forEach(r=>{all[r.date]=r;});
   Object.entries(balCache).forEach(([k,v])=>{all[k]=v;});
   const sorted=Object.keys(all).sort();
   const idx=sorted.indexOf(key);
@@ -1393,7 +1624,7 @@ window.onBalSel=()=>{
         id="cat-pill-${acc.id}">${ACC_CAT_LABELS[cat]}</button>
       <span class="bal-prev-val">${v1!==null?v1.toFixed(1):''}</span>
       <span class="bal-prev-val t1">${v2!==null?v2.toFixed(1):''}</span>
-      <input type="text" inputmode="numeric" class="bal-inp" id="bv-${acc.id}"
+      <input type="text"  class="bal-inp" id="bv-${acc.id}"
         placeholder="0.0" value="${cv!==''?Number(cv).toFixed(1):''}" oninput="calcBalTotal()"/>
     </div>`;
     container.appendChild(div);
@@ -1448,7 +1679,7 @@ async function renderHistory(){
     // merge seed (mCache) with Firestore — Firestore wins if it has updatedAt
     const all={...mCache};
     try{
-      const snap=await getDocs(collection(db,'months'));
+      const snap=await getDocs(collection(db,'users',uid(),'months'));
       snap.forEach(d=>{
         const fd=normalizeMonth(d.data());
         const isNewFormat=fd.inc&&typeof fd.inc==='object'&&!Array.isArray(fd.inc)&&Object.keys(fd.inc).every(k=>isNaN(k));
@@ -1541,51 +1772,259 @@ window.goPage=async name=>{
 window.forceReseed=async()=>{
   if(!confirm('This will overwrite all historical month data with the built-in seed. Your March 2026 edits will be lost. Continue?')) return;
   closeSettings();
-  ss('busy','reseeding…');
+  ss('busy','resetting…');
   try{
-    for(const[k,d]of Object.entries(MONTHS_SEED)) await setDoc(mRef(k),d);
-    for(const r of BAL_SEED) await setDoc(bRef(r.date),r);
     await setDoc(sRef(),{...DEFAULT_CATS,accounts:DEFAULT_ACCOUNTS});
-    // reload cache
-    mCache={};
-    BAL_SEED.forEach(r=>{balCache[r.date]=r;});
-    Object.entries(MONTHS_SEED).forEach(([k,d])=>{mCache[k]=normalizeMonth(JSON.parse(JSON.stringify(d)));});
-    ss('ok','reseeded');
+    savedCats=JSON.parse(JSON.stringify(DEFAULT_CATS));
+    savedAccounts=JSON.parse(JSON.stringify(DEFAULT_ACCOUNTS));
+    accts=JSON.parse(JSON.stringify(DEFAULT_ACCOUNTS));
+    cats=JSON.parse(JSON.stringify(DEFAULT_CATS));
+    ss('ok','settings reset');
     await renderMonth();
-  }catch(e){ss('err','reseed failed');console.error(e);}
+  }catch(e){ss('err','reset failed');console.error(e);}
 };
 window.goMonth=async k=>{curKey=k;goPage('month');};
 
 // ── BOOT ──
-(async()=>{
-  // 1. render immediately from seed data — works offline/quota exceeded
-  ss('ok','offline mode');
-  await renderMonth();
+// ── WIZARD ──
+let wizStep=0;
+const WIZ_KEY='myworth_wizard_done';
+const WIZ_STEPS=4;
 
-  // 2. try Firebase in background — READ ONLY, never auto-write
+function wizShow(){
+  document.getElementById('wizard').classList.remove('hidden');
+  wizAddRow('wiz-bal-list','Account','e.g. Monobank');
+  wizAddRow('wiz-inc-list','Source','e.g. Salary');
+}
+function wizHide(){document.getElementById('wizard').classList.add('hidden');}
+function wizUpdateDots(){
+  for(let i=0;i<WIZ_STEPS;i++){
+    const d=document.getElementById('wdot-'+i);
+    if(!d) continue;
+    d.className='wiz-dot'+(i<wizStep?' done':i===wizStep?' active':'');
+  }
+}
+window.wizAddRow=function(listId, label, placeholder){
+  const list=document.getElementById(listId);
+  const row=document.createElement('div');
+  row.className='wiz-exp-row';
+  row.innerHTML=`
+    <input class="wiz-exp-name" type="text" placeholder="${placeholder}" autocomplete="off"/>
+    <input class="wiz-exp-amt" type="text" inputmode="numeric" placeholder="0 K"/>
+    <button class="wiz-exp-del" onclick="this.parentElement.remove()">×</button>`;
+  list.appendChild(row);
+  setTimeout(()=>row.querySelector('.wiz-exp-name').focus(),50);
+};
+// keep old name for restart button
+window.wizAddExp=()=>wizAddRow('wiz-exp-list','Expense','e.g. Rent');
+
+window.wizNext=function(){
+  document.getElementById('wstep-'+wizStep).classList.remove('active');
+  wizStep++;
+  wizUpdateDots();
+  const next=document.getElementById('wstep-'+wizStep);
+  if(next) next.classList.add('active');
+};
+window.wizBack=function(){
+  document.getElementById('wstep-'+wizStep).classList.remove('active');
+  wizStep--;
+  wizUpdateDots();
+  document.getElementById('wstep-'+wizStep).classList.add('active');
+};
+
+function wizCollectRows(listId){
+  const rows=document.getElementById(listId).querySelectorAll('.wiz-exp-row');
+  const items=[];
+  rows.forEach(row=>{
+    const name=row.querySelector('.wiz-exp-name').value.trim();
+    const amt=parseFloat(row.querySelector('.wiz-exp-amt').value)||0;
+    if(name) items.push({name,amt});
+  });
+  return items;
+}
+
+window.wizFinish=async function(){
+  const balItems=wizCollectRows('wiz-bal-list');
+  const incItems=wizCollectRows('wiz-inc-list');
+  const savItems=wizCollectRows('wiz-sav-list');
+  const expItems=wizCollectRows('wiz-exp-list');
+
+  const totalBal=balItems.reduce((s,i)=>s+i.amt,0);
+  const totalInc=incItems.reduce((s,i)=>s+i.amt,0);
+  const totalSav=savItems.reduce((s,i)=>s+i.amt,0);
+  const totalExp=expItems.reduce((s,i)=>s+i.amt,0);
+
+  const dLeft=()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth()+1,0).getDate()-n.getDate();};
+  const dl=dLeft();
+  const free=totalBal+totalInc-totalSav-totalExp;
+  const pd=dl>0?free/dl:0;
+
+  // show result
+  document.getElementById('wstep-'+wizStep).classList.remove('active');
+  for(let i=0;i<WIZ_STEPS;i++){const d=document.getElementById('wdot-'+i);if(d) d.className='wiz-dot done';}
+  const res=document.getElementById('wiz-result');
+  res.style.display='flex';
+  const numEl=document.getElementById('wiz-result-num');
+  numEl.textContent=(free>=0?'':'-')+Math.abs(free).toFixed(1);
+  numEl.style.color=free>=0?'var(--green)':'var(--red)';
+  document.getElementById('wiz-result-pd').innerHTML=
+    dl>0?`<span>${pd.toFixed(2)} K</span> per day for ${dl} days`:'';
+
+  // save to Firebase
+  try{
+    const curKey=ky(new Date());
+    const today=new Date().toISOString().slice(0,10);
+
+    // balance entry
+    const balDoc={date:today,total:totalBal};
+    savedAccounts.forEach(a=>{balDoc[a.id]=0;});
+    // map named balance items to accounts where name matches, else store in total only
+    balItems.forEach(item=>{
+      const match=savedAccounts.find(a=>a.label.toLowerCase().includes(item.name.toLowerCase()));
+      if(match) balDoc[match.id]=item.amt;
+    });
+    balDoc.total=totalBal;
+    balCache[today]=balDoc;
+    try{await setDoc(bRef(today),balDoc);}catch(e){}
+
+    // month doc
+    if(!mCache[curKey]) mCache[curKey]={closed:false,milestone:'',startBal:totalBal,endBal:null,
+      fcInc:'',fcIncNote:'',fcExp:'',fcExpNote:'',inc:{},sav:{},exp:{}};
+    mCache[curKey].startBal=totalBal;
+
+    // income items → forecast
+    incItems.forEach(item=>{
+      if(!mCache[curKey].inc[item.name]) mCache[curKey].inc[item.name]={v:'',fc:'',note:''};
+      mCache[curKey].inc[item.name].fc=String(item.amt);
+      if(!savedCats.inc.includes(item.name)) savedCats.inc.push(item.name);
+    });
+    // savings items → forecast
+    savItems.forEach(item=>{
+      if(!mCache[curKey].sav[item.name]) mCache[curKey].sav[item.name]={v:'',fc:'',note:''};
+      mCache[curKey].sav[item.name].fc=String(item.amt);
+      if(!savedCats.sav.includes(item.name)) savedCats.sav.push(item.name);
+    });
+    // expense items → forecast
+    expItems.forEach(item=>{
+      if(!mCache[curKey].exp[item.name]) mCache[curKey].exp[item.name]={v:'',fc:'',note:''};
+      mCache[curKey].exp[item.name].fc=String(item.amt);
+      if(!savedCats.exp.includes(item.name)) savedCats.exp.push(item.name);
+    });
+
+    try{await setDoc(mRef(curKey),mCache[curKey]);}catch(e){}
+    try{await setDoc(sRef(),{...savedCats,accounts:savedAccounts});}catch(e){}
+  }catch(e){console.error('wizard save',e);}
+};
+
+window.wizDone=function(){
+  if(currentUser) localStorage.setItem(WIZ_KEY+':'+currentUser.uid,'1');
+  wizHide();
+  try{renderMonth();}catch(e){}
+};
+
+// ── AUTH FUNCTIONS ──
+let loginMode='signin';
+window.loginSetMode=function(mode){
+  loginMode=mode;
+  document.getElementById('btn-signin').className='login-mode-btn'+(mode==='signin'?' active':'');
+  document.getElementById('btn-signup').className='login-mode-btn'+(mode==='signup'?' active':'');
+  document.getElementById('login-submit').textContent=mode==='signin'?'Sign in':'Create account';
+  document.getElementById('login-err').textContent='';
+};
+window.loginGoogle=async function(){
+  document.getElementById('login-err').textContent='';
+  try{
+    await signInWithPopup(auth,new GoogleAuthProvider());
+  }catch(e){
+    if(e.code!=='auth/popup-closed-by-user')
+      document.getElementById('login-err').textContent='Google sign-in failed. Try again.';
+  }
+};
+window.loginSubmit=async function(){
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  const errEl=document.getElementById('login-err');
+  const btn=document.getElementById('login-submit');
+  if(!email||!pass){errEl.textContent='Please fill in all fields.';return;}
+  btn.textContent='…';btn.disabled=true;errEl.textContent='';
+  try{
+    if(loginMode==='signin') await signInWithEmailAndPassword(auth,email,pass);
+    else await createUserWithEmailAndPassword(auth,email,pass);
+  }catch(e){
+    const msgs={
+      'auth/invalid-credential':'Incorrect email or password.',
+      'auth/email-already-in-use':'Account already exists.',
+      'auth/weak-password':'Password must be at least 6 characters.',
+      'auth/invalid-email':'Please enter a valid email.',
+    };
+    errEl.textContent=msgs[e.code]||'Something went wrong.';
+    btn.textContent=loginMode==='signin'?'Sign in':'Create account';
+    btn.disabled=false;
+  }
+};
+window.authSignOut=async function(){
+  closeSettings();
+  currentUser=null;
+  mCache={};balCache={};
+  await signOut(auth);
+};
+
+// ── BOOT ──
+async function bootForUser(user){
+  currentUser=user;
+  // show user info in settings
+  const el=document.getElementById('settings-user-email');
+  if(el) el.textContent=user.email||user.displayName||'';
+
+  mCache={};balCache={};
+
+  // load Firebase data first, then render
   try{
     ss('busy','connecting…');
     await loadSettings();
-    // load all months from Firebase, prefer Firebase over seed if valid new format
     try{
-      const snap=await getDocs(collection(db,'months'));
+      const snap=await getDocs(collection(db,'users',uid(),'months'));
       snap.forEach(d=>{
         const fd=normalizeMonth(d.data());
-        const isNewFormat=fd.inc&&typeof fd.inc==='object'&&!Array.isArray(fd.inc)&&
-          Object.keys(fd.inc).every(k=>isNaN(k));
-        if(isNewFormat) mCache[d.id]=fd;
+        if(fd.inc&&typeof fd.inc==='object'&&!Array.isArray(fd.inc))
+          mCache[d.id]=fd;
       });
-    }catch(e){}
+    }catch(e){console.warn('months',e);}
     try{
-      const bSnap=await getDocs(collection(db,'balances'));
+      const bSnap=await getDocs(collection(db,'users',uid(),'balances'));
       bSnap.forEach(d=>{balCache[d.id]=d.data();});
-    }catch(e){}
+    }catch(e){console.warn('balances',e);}
     ss('ok','connected');
-    await renderMonth();
-  }catch(e){
-    ss('err','offline — showing local data');
+  }catch(e){ss('err','offline');console.error(e);}
+
+  await renderMonth();
+
+  // wizard: show only for brand new users (no data + never completed)
+  const wizKey=WIZ_KEY+':'+user.uid;
+  const hasData=Object.keys(mCache).length>0;
+  if(!hasData&&!localStorage.getItem(wizKey)){
+    wizShow();
+  } else if(!localStorage.getItem(wizKey)){
+    localStorage.setItem(wizKey,'1'); // has data on new device — skip wizard
   }
-})();
+}
+
+// Show login immediately, Firebase resolves in background
+document.getElementById('login-screen').classList.remove('hidden');
+
+onAuthStateChanged(auth, async user=>{
+  if(user){
+    document.getElementById('login-screen').classList.add('hidden');
+    try{await bootForUser(user);}catch(e){console.error('boot',e);}
+  } else {
+    currentUser=null;
+    mCache={};balCache={};
+    document.getElementById('login-screen').classList.remove('hidden');
+    ss('ok','');
+  }
+});
 </script>
+</div><!-- app-shell-inner -->
+</div><!-- app-shell -->
 </body>
 </html>
